@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 120">
+  <!-- App Icon Mark -->
+  <rect x="10" y="10" width="100" height="100" rx="22" fill="#E85D4A"/>
+  <rect x="30" y="28" width="60" height="9" rx="4" fill="#F4D5A6"/>
+  <rect x="30" y="83" width="60" height="9" rx="4" fill="#F4D5A6"/>
+  <rect x="35" y="36" width="50" height="48" rx="3" fill="#FFFAF2"/>
+  <line x1="38" y1="45" x2="82" y2="49" stroke="#E0D4C3" stroke-width="2.2" stroke-linecap="round"/>
+  <line x1="38" y1="54" x2="82" y2="58" stroke="#E0D4C3" stroke-width="2.2" stroke-linecap="round"/>
+  <line x1="38" y1="63" x2="82" y2="67" stroke="#E0D4C3" stroke-width="2.2" stroke-linecap="round"/>
+  <line x1="38" y1="72" x2="82" y2="76" stroke="#E0D4C3" stroke-width="2.2" stroke-linecap="round"/>
+  <circle cx="84" cy="84" r="21" fill="#E85D4A"/>
+  <circle cx="84" cy="84" r="18" fill="#222C3E"/>
+  <path d="M76 84.5 L81.5 90 L93 78" fill="none" stroke="#2ECC71" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Wordmark -->
+  <text x="128" y="68" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif" font-size="40" font-weight="800" letter-spacing="-0.8" fill="#1C1C1E">Stitch Check</text>
+  <text x="130" y="92" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="600" letter-spacing="1.4" fill="#6E6E73">THREAD STASH &amp; PROJECTS</text>
+</svg>

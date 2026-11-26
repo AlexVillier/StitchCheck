@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Stitch Check" />
+  <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
+  <title>Stitch Check</title>
+
+  <!-- Icons & PWA Manifest -->
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png" />
+  <link rel="shortcut icon" href="favicon.ico" />
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+  <link rel="manifest" href="manifest.json" />
+
+  <style>
+    :root {
+      --bg: #f2f2f7;
+      --card: #ffffff;
+      --text: #1c1c1e;
+      --subtext: #6e6e73;
+      --border: #e5e5ea;
+      --accent: #e85d4a;
+      --green: #34c759;
+      --red: #ff3b30;
+      --orange: #ff9500;
+      --tab-bg: rgba(249, 249, 249, 0.92);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #000000;
+        --card: #1c1c1e;
+        --text: #f2f2f7;
+        --subtext: #8e8e93;
+        --border: #2c2c2e;
+        --accent: #ff6b57;
+        --green: #30d158;
+        --red: #ff453a;
+        --orange: #ff9f0a;
+        --tab-bg: rgba(28, 28, 30, 0.92);
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+    }
+
+    html, body {
+      margin: 0;
+      background-color: var(--bg);
+      color: var(--text);
+    }
+
+    body {
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: 72px;
+    }
+
+    header {
+      position: sticky;
+      top: env(safe-area-inset-top);
+      z-index: 10;
+      background: var(--card);
+      padding: 12px 16px;
+      border-bottom: 0.5px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .header-logo {
+      width: 30px;
+      height: 30px;
+      flex-shrink: 0;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.4px;
+    }
+
+    .container {
+      padding: 16px;
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    .view { display: none; }
+    .view.active { display: block; }
+
+    /* Inputs & Buttons */
+    input, select, textarea {
+      width: 100%;
+      padding: 11px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--text);
+      font-size: 16px; /* Prevents iOS zoom on focus */
+      margin-bottom: 10px;
+    }
+
+    button {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 11px 16px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    button.secondary {
+      background: var(--border);
+      color: var(--text);
+    }
+
+    button.danger {
+      background: transparent;
+      color: var(--red);
+      padding: 6px 10px;
+    }
+
+    button.small {
+      padding: 6px 12px;
+      font-size: 13px;
+      border-radius: 8px;
+    }
+
+    /* Cards & Lists */
+    .card {
+      background: var(--card);
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 12px;
+      border: 0.5px solid var(--border);
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .thread-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .swatch {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--subtext);
+      background: var(--bg);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .badge.owned {
+      background: rgba(52, 199, 89, 0.16);
+      color: var(--green);
+    }
+
+    .badge.missing {
+      background: rgba(255, 59, 48, 0.16);
+      color: var(--red);
+    }
+
+    .subtext {
+      color: var(--subtext);
+      font-size: 13px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    /* Bottom Tab Bar */
+    nav.tab-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--card);
+      border-top: 0.5px solid var(--border);
+      display: flex;
+      justify-content: space-around;
+      padding: 8px 0;
+      z-index: 20;
+    }
+
+    nav.tab-bar button {
+      background: transparent;
+      color: var(--subtext);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      font-size: 11px;
+      font-weight: 500;
+      padding: 4px 16px;
+    }
+
+    nav.tab-bar button.active {
+      color: var(--accent);
+    }
+
+    nav.tab-bar svg {
+      width: 22px;
+      height: 22px;
+      fill: currentColor;
+    }
+
+    .pill-filter {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      margin-bottom: 8px;
+    }
+
+    .pill-filter button {
+      background: var(--card);
+      color: var(--text);
+      border: 0.5px solid var(--border);
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .pill-filter button.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-brand">
+      <svg class="header-logo" viewBox="0 0 128 128" aria-hidden="true">
+        <rect width="128" height="128" rx="28" fill="#E85D4A"/>
+        <rect x="32" y="28" width="64" height="11" rx="5" fill="#F4D5A6"/>
+        <rect x="32" y="89" width="64" height="11" rx="5" fill="#F4D5A6"/>
+        <rect x="38" y="38" width="52" height="52" rx="4" fill="#FFFAF2"/>
+        <line x1="41" y1="48" x2="87" y2="53" stroke="#E0D4C3" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="41" y1="58" x2="87" y2="63" stroke="#E0D4C3" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="41" y1="68" x2="87" y2="73" stroke="#E0D4C3" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="41" y1="78" x2="87" y2="83" stroke="#E0D4C3" stroke-width="2.5" stroke-linecap="round"/>
+        <circle cx="91" cy="91" r="26" fill="#E85D4A"/>
+        <circle cx="91" cy="91" r="22" fill="#222C3E"/>
+        <path d="M81 91.5 L88 98.5 L102 83.5" fill="none" stroke="#2ECC71" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <h1 id="pageTitle">Stitch Check</h1>
+    </div>
+    <span id="stashCount" class="subtext">0 threads</span>
+  </header>
+
+  <main class="container">
+    <!-- VIEW 1: STASH & SEARCH -->
+    <section id="view-stash" class="view active">
+      <input type="search" id="searchInput" placeholder="Search number, color, or brand..." oninput="renderStash()" />
+      <div id="brandFilters" class="pill-filter"></div>
+      <div id="stashList"></div>
+    </section>
+
+    <!-- VIEW 2: ADD / BULK IMPORT -->
+    <section id="view-add" class="view">
+      <div class="card">
+        <h3 style="margin-top:0">Add Single Thread</h3>
+        <div class="grid-2">
+          <input type="text" id="addBrand" placeholder="Brand (e.g. DMC)" value="DMC" />
+          <input type="text" id="addNumber" placeholder="Number (e.g. 310)" />
+        </div>
+        <div class="grid-2">
+          <input type="text" id="addColor" placeholder="Color Name (e.g. Black)" />
+          <input type="number" id="addQty" placeholder="Qty" value="1" min="0" />
+        </div>
+        <button style="width:100%" onclick="addSingleThread()">Add to Stash</button>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-top:0">Bulk Import</h3>
+        <p class="subtext" style="margin-top:-6px">
+          Paste one thread per line: <code>Brand, Number, Color</code> (or <code>Number, Color</code> to default to DMC).
+        </p>
+        <textarea id="bulkInput" rows="6" placeholder="DMC, 310, Black&#10;DMC, 666, Bright Red&#10;Anchor, 403, Black"></textarea>
+        <button class="secondary" style="width:100%" onclick="bulkImport()">Import List</button>
+      </div>
+    </section>
+
+    <!-- VIEW 3: PROJECTS -->
+    <section id="view-projects" class="view">
+      <div class="card">
+        <div class="row">
+          <input type="text" id="newProjectName" placeholder="New Project Name..." style="margin-bottom:0" />
+          <button onclick="createProject()">Create</button>
+        </div>
+      </div>
+      <div id="projectsList"></div>
+    </section>
+
+    <!-- VIEW 4: BACKUP & RASPBERRY PI SYNC -->
+    <section id="view-sync" class="view">
+      <div class="card">
+        <h3 style="margin-top:0">Raspberry Pi Sync (Optional)</h3>
+        <p class="subtext">Connect to your Pi via Tailscale HTTPS or local API.</p>
+        <input type="url" id="piUrl" placeholder="https://raspberrypi.tailnet.ts.net/api/data" />
+        <form onsubmit="return false;">
+          <input type="password" id="piToken" placeholder="Bearer API Token" autocomplete="current-password" />
+        </form>
+        <div class="grid-2">
+          <button onclick="pushToPi()">Push to Pi</button>
+          <button class="secondary" onclick="pullFromPi()">Pull from Pi</button>
+        </div>
+        <p id="syncStatus" class="subtext" style="margin-bottom:0"></p>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-top:0">Manual JSON Backup</h3>
+        <div class="grid-2">
+          <button class="secondary" onclick="exportJSON()">Export File</button>
+          <button class="secondary" onclick="document.getElementById('importFile').click()">Import File</button>
+        </div>
+        <input type="file" id="importFile" accept=".json" style="display:none" onchange="importJSON(event)" />
+      </div>
+    </section>
+  </main>
+
+  <!-- BOTTOM NAVIGATION -->
+  <nav class="tab-bar">
+    <button class="active" onclick="switchTab('stash', 'Stitch Check', this)">
+      <svg viewBox="0 0 24 24"><path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/></svg>
+      Stash
+    </button>
+    <button onclick="switchTab('add', 'Add Threads', this)">
+      <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+      Add
+    </button>
+    <button onclick="switchTab('projects', 'Projects', this)">
+      <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+      Projects
+    </button>
+    <button onclick="switchTab('sync', 'Sync & Backup', this)">
+      <svg viewBox="0 0 24 24"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>
+      Sync
+    </button>
+  </nav>
+
+  <script>
+    // State Management (migrates data if user previously used threadstash_v1)
+    const STORAGE_KEY = 'stitchcheck_v1';
+    const LEGACY_KEY = 'threadstash_v1';
+    const CONFIG_KEY = 'stitchcheck_pi_config';
+
+    const savedData = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_KEY);
+
+    let state = savedData ? JSON.parse(savedData) : {
+      threads: [
+        { id: '1', brand: 'DMC', number: '310', color: 'Black', qty: 2 },
+        { id: '2', brand: 'DMC', number: 'B5200', color: 'Snow White', qty: 1 }
+      ],
+      projects: [
+        {
+          id: 'p1',
+          name: 'Sample Sampler',
+          requirements: [
+            { brand: 'DMC', number: '310', color: 'Black' },
+            { brand: 'DMC', number: '817', color: 'Very Dark Coral Red' }
+          ]
+        }
+      ]
+    };
+
+    let activeBrandFilter = 'ALL';
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      updateHeaderCount();
+    }
+
+    function updateHeaderCount() {
+      document.getElementById('stashCount').textContent = `${state.threads.length} threads`;
+    }
+
+    function switchTab(tabId, title, btn) {
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      document.getElementById(`view-${tabId}`).classList.add('active');
+      document.getElementById('pageTitle').textContent = title;
+      document.querySelectorAll('nav.tab-bar button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      if (tabId === 'stash') renderStash();
+      if (tabId === 'projects') renderProjects();
+    }
+
+    // --- STASH FUNCTIONS ---
+    function addSingleThread() {
+      const brand = document.getElementById('addBrand').value.trim() || 'DMC';
+      const number = document.getElementById('addNumber').value.trim();
+      const color = document.getElementById('addColor').value.trim();
+      const qty = parseInt(document.getElementById('addQty').value, 10) || 1;
+
+      if (!number) return alert('Please enter a thread number.');
+
+      upsertThread(brand, number, color, qty);
+      document.getElementById('addNumber').value = '';
+      document.getElementById('addColor').value = '';
+      saveState();
+      alert(`Saved ${brand} ${number}`);
+    }
+
+    function upsertThread(brand, number, color, qtyToAdd) {
+      const existing = state.threads.find(
+        t => t.brand.toLowerCase() === brand.toLowerCase() && t.number.toLowerCase() === number.toLowerCase()
+      );
+      if (existing) {
+        existing.qty += qtyToAdd;
+        if (color && !existing.color) existing.color = color;
+      } else {
+        state.threads.push({
+          id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
+          brand,
+          number,
+          color: color || 'Unnamed',
+          qty: qtyToAdd
+        });
+      }
+    }
+
+    function bulkImport() {
+      const raw = document.getElementById('bulkInput').value.trim();
+      if (!raw) return;
+      const lines = raw.split('\n');
+      let count = 0;
+
+      lines.forEach(line => {
+        const parts = line.split(',').map(p => p.trim()).filter(Boolean);
+        if (parts.length >= 3) {
+          upsertThread(parts[0], parts[1], parts.slice(2).join(' '), 1);
+          count++;
+        } else if (parts.length === 2) {
+          upsertThread('DMC', parts[0], parts[1], 1);
+          count++;
+        } else if (parts.length === 1) {
+          upsertThread('DMC', parts[0], '', 1);
+          count++;
+        }
+      });
+
+      saveState();
+      document.getElementById('bulkInput').value = '';
+      alert(`Imported ${count} threads!`);
+    }
+
+    function adjustQty(id, delta) {
+      const thread = state.threads.find(t => t.id === id);
+      if (!thread) return;
+      thread.qty += delta;
+      if (thread.qty <= 0) {
+        if (confirm(`Remove ${thread.brand} ${thread.number} from stash?`)) {
+          state.threads = state.threads.filter(t => t.id !== id);
+        } else {
+          thread.qty = 1;
+        }
+      }
+      saveState();
+      renderStash();
+    }
+
+    function renderBrandPills() {
+      const brands = ['ALL', ...new Set(state.threads.map(t => t.brand))];
+      const container = document.getElementById('brandFilters');
+      container.innerHTML = brands.map(b => `
+        <button class="${activeBrandFilter === b ? 'active' : ''}" onclick="setBrandFilter('${b}')">${b}</button>
+      `).join('');
+    }
+
+    function setBrandFilter(brand) {
+      activeBrandFilter = brand;
+      renderStash();
+    }
+
+    function renderStash() {
+      renderBrandPills();
+      const query = document.getElementById('searchInput').value.toLowerCase().trim();
+      const list = document.getElementById('stashList');
+
+      const filtered = state.threads
+        .filter(t => activeBrandFilter === 'ALL' || t.brand === activeBrandFilter)
+        .filter(t =>
+          t.number.toLowerCase().includes(query) ||
+          t.color.toLowerCase().includes(query) ||
+          t.brand.toLowerCase().includes(query)
+        )
+        .sort((a, b) => a.number.localeCompare(b.number, undefined, { numeric: true }));
+
+      if (filtered.length === 0) {
+        list.innerHTML = `<p class="subtext" style="text-align:center;margin-top:32px">No matching threads found.</p>`;
+        return;
+      }
+
+      list.innerHTML = filtered.map(t => `
+        <div class="card row">
+          <div class="thread-meta">
+            <div class="swatch" style="background:${guessCssColor(t.color)}"></div>
+            <div>
+              <strong>${escapeHtml(t.brand)} ${escapeHtml(t.number)}</strong>
+              <div class="subtext">${escapeHtml(t.color)}</div>
+            </div>
+          </div>
+          <div class="row" style="gap:6px">
+            <button class="secondary small" onclick="adjustQty('${t.id}', -1)">−</button>
+            <span style="min-width:22px;text-align:center;font-weight:600">${t.qty}</span>
+            <button class="secondary small" onclick="adjustQty('${t.id}', 1)">+</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // --- PROJECT FUNCTIONS ---
+    function createProject() {
+      const input = document.getElementById('newProjectName');
+      const name = input.value.trim();
+      if (!name) return;
+      state.projects.unshift({
+        id: 'p_' + Date.now().toString(36),
+        name,
+        requirements: []
+      });
+      input.value = '';
+      saveState();
+      renderProjects();
+    }
+
+    function addReqToProject(projectId) {
+      const brand = document.getElementById(`pBrand_${projectId}`).value.trim() || 'DMC';
+      const number = document.getElementById(`pNum_${projectId}`).value.trim();
+      const color = document.getElementById(`pCol_${projectId}`).value.trim();
+      if (!number) return;
+
+      const proj = state.projects.find(p => p.id === projectId);
+      proj.requirements.push({ brand, number, color });
+      saveState();
+      renderProjects();
+    }
+
+    function removeReq(projectId, idx) {
+      const proj = state.projects.find(p => p.id === projectId);
+      proj.requirements.splice(idx, 1);
+      saveState();
+      renderProjects();
+    }
+
+    function deleteProject(projectId) {
+      if (!confirm('Delete this project?')) return;
+      state.projects = state.projects.filter(p => p.id !== projectId);
+      saveState();
+      renderProjects();
+    }
+
+    function checkStashOwnership(brand, number) {
+      const match = state.threads.find(
+        t => t.brand.toLowerCase() === brand.toLowerCase() && t.number.toLowerCase() === number.toLowerCase() && t.qty > 0
+      );
+      return match || null;
+    }
+
+    function renderProjects() {
+      const container = document.getElementById('projectsList');
+      if (state.projects.length === 0) {
+        container.innerHTML = `<p class="subtext" style="text-align:center;margin-top:32px">No projects yet. Create one above!</p>`;
+        return;
+      }
+
+      container.innerHTML = state.projects.map(p => {
+        let ownedCount = 0;
+        const rowsHtml = p.requirements.map((req, idx) => {
+          const owned = checkStashOwnership(req.brand, req.number);
+          if (owned) ownedCount++;
+          const displayColor = req.color || (owned ? owned.color : '');
+          return `
+            <div class="row" style="padding:8px 0; border-top:0.5px solid var(--border)">
+              <div>
+                <strong>${escapeHtml(req.brand)} ${escapeHtml(req.number)}</strong>
+                <span class="subtext">${displayColor ? '· ' + escapeHtml(displayColor) : ''}</span>
+              </div>
+              <div class="row" style="gap:6px">
+                ${owned
+                  ? `<span class="badge owned">In Stash (${owned.qty})</span>`
+                  : `<span class="badge missing">Need</span>`}
+                <button class="danger" onclick="removeReq('${p.id}', ${idx})">✕</button>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        return `
+          <div class="card">
+            <div class="row" style="margin-bottom:10px">
+              <div>
+                <h3 style="margin:0">${escapeHtml(p.name)}</h3>
+                <span class="subtext">${ownedCount} of ${p.requirements.length} threads in stash</span>
+              </div>
+              <button class="danger" onclick="deleteProject('${p.id}')">Delete</button>
+            </div>
+
+            ${rowsHtml}
+
+            <div class="grid-2" style="margin-top:12px">
+              <input type="text" id="pBrand_${p.id}" placeholder="Brand" value="DMC" style="margin-bottom:0" />
+              <input type="text" id="pNum_${p.id}" placeholder="Thread #" style="margin-bottom:0" />
+            </div>
+            <div class="row" style="margin-top:8px">
+              <input type="text" id="pCol_${p.id}" placeholder="Color (optional)" style="margin-bottom:0" />
+              <button class="small" onclick="addReqToProject('${p.id}')">+ Add</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // --- SYNC & BACKUP ---
+    function loadPiConfig() {
+      const cfg = JSON.parse(localStorage.getItem(CONFIG_KEY) || '{}');
+      if (cfg.url) document.getElementById('piUrl').value = cfg.url;
+      if (cfg.token) document.getElementById('piToken').value = cfg.token;
+    }
+
+    function savePiConfig() {
+      const url = document.getElementById('piUrl').value.trim();
+      const token = document.getElementById('piToken').value.trim();
+      localStorage.setItem(CONFIG_KEY, JSON.stringify({ url, token }));
+      return { url, token };
+    }
+
+    async function pushToPi() {
+      const { url, token } = savePiConfig();
+      const status = document.getElementById('syncStatus');
+      if (!url) return alert('Enter your Raspberry Pi endpoint URL.');
+      status.textContent = 'Pushing...';
+      try {
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          },
+          body: JSON.stringify(state)
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        status.textContent = `Synced to Pi at ${new Date().toLocaleTimeString()}`;
+      } catch (err) {
+        status.textContent = `Sync failed: ${err.message}`;
+      }
+    }
+
+    async function pullFromPi() {
+      const { url, token } = savePiConfig();
+      const status = document.getElementById('syncStatus');
+      if (!url) return alert('Enter your Raspberry Pi endpoint URL.');
+      status.textContent = 'Pulling...';
+      try {
+        const res = await fetch(url, {
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const remote = await res.json();
+        if (remote.threads && remote.projects) {
+          state = remote;
+          saveState();
+          renderStash();
+          status.textContent = `Pulled from Pi at ${new Date().toLocaleTimeString()}`;
+        }
+      } catch (err) {
+        status.textContent = `Pull failed: ${err.message}`;
+      }
+    }
+
+    function exportJSON() {
+      const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `stitch-check-backup-${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+    }
+
+    function importJSON(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          if (parsed.threads && parsed.projects) {
+            state = parsed;
+            saveState();
+            renderStash();
+            alert('Backup restored!');
+          }
+        } catch {
+          alert('Invalid JSON backup file.');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    // --- UTILITIES ---
+    function guessCssColor(name) {
+      if (!name) return 'var(--bg)';
+      const n = name.toLowerCase();
+      const map = {
+        black: '#1c1c1e', white: '#ffffff', red: '#d70015', coral: '#ff453a',
+        blue: '#007aff', navy: '#1d2d50', green: '#28a745', yellow: '#ffd60a',
+        gold: '#d4af37', orange: '#ff9500', purple: '#af52de', violet: '#5856d6',
+        pink: '#ff2d55', brown: '#8e5a2b', grey: '#8e8e93', gray: '#8e8e93',
+        cream: '#f5f5dc', ecru: '#ede6d6'
+      };
+      for (const [key, hex] of Object.entries(map)) {
+        if (n.includes(key)) return hex;
+      }
+      return 'var(--bg)';
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    // Init
+    loadPiConfig();
+    updateHeaderCount();
+    renderStash();
+  </script>
+</body>
+</html>
