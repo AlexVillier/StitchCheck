@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Stitch Check" />
   <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)" />
@@ -18,58 +19,114 @@
   <link rel="manifest" href="manifest.json" />
 
   <style>
-    :root {
+    :root,
+    :root.theme-light {
+      color-scheme: light;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --nav-height: 64px;
+
       --bg: #f2f2f7;
       --card: #ffffff;
+      --card-elevated: #fafafc;
       --text: #1c1c1e;
-      --subtext: #6e6e73;
-      --border: #e5e5ea;
+      --subtext: #636366;
+      --border: rgba(60, 60, 67, 0.16);
       --accent: #e85d4a;
-      --green: #34c759;
-      --red: #ff3b30;
-      --orange: #ff9500;
-      --tab-bg: rgba(249, 249, 249, 0.92);
+      --accent-soft: rgba(232, 93, 74, 0.14);
+      --green: #248a3d;
+      --red: #d70015;
+      --orange: #c93400;
+
+      /* iOS Light Liquid Glass tokens */
+      --glass-bg: rgba(255, 255, 255, 0.72);
+      --glass-border: rgba(255, 255, 255, 0.85);
+      --glass-rim: rgba(255, 255, 255, 0.95);
+      --glass-shadow: 0 12px 32px rgba(28, 28, 30, 0.12), 0 2px 8px rgba(28, 28, 30, 0.06), inset 0 1px 0 var(--glass-rim);
+      --glass-pill-active: rgba(232, 93, 74, 0.16);
+    }
+
+    :root.theme-dark {
+      color-scheme: dark;
+      --bg: #000000;
+      --card: #1c1c1e;
+      --card-elevated: #242426;
+      --text: #f2f2f7;
+      --subtext: #8e8e93;
+      --border: rgba(255, 255, 255, 0.12);
+      --accent: #ff6b57;
+      --accent-soft: rgba(255, 107, 87, 0.18);
+      --green: #30d158;
+      --red: #ff453a;
+      --orange: #ff9f0a;
+
+      /* Dark Liquid Glass tokens */
+      --glass-bg: rgba(34, 34, 38, 0.62);
+      --glass-border: rgba(255, 255, 255, 0.18);
+      --glass-rim: rgba(255, 255, 255, 0.28);
+      --glass-shadow: 0 14px 36px rgba(0, 0, 0, 0.55), 0 2px 10px rgba(0, 0, 0, 0.35), inset 0 1px 0 var(--glass-rim);
+      --glass-pill-active: rgba(255, 107, 87, 0.22);
     }
 
     @media (prefers-color-scheme: dark) {
-      :root {
+      :root:not(.theme-light):not(.theme-dark) {
+        color-scheme: dark;
         --bg: #000000;
         --card: #1c1c1e;
+        --card-elevated: #242426;
         --text: #f2f2f7;
         --subtext: #8e8e93;
-        --border: #2c2c2e;
+        --border: rgba(255, 255, 255, 0.12);
         --accent: #ff6b57;
+        --accent-soft: rgba(255, 107, 87, 0.18);
         --green: #30d158;
         --red: #ff453a;
         --orange: #ff9f0a;
-        --tab-bg: rgba(28, 28, 30, 0.92);
+
+        /* Dark Liquid Glass tokens */
+        --glass-bg: rgba(34, 34, 38, 0.62);
+        --glass-border: rgba(255, 255, 255, 0.18);
+        --glass-rim: rgba(255, 255, 255, 0.28);
+        --glass-shadow: 0 14px 36px rgba(0, 0, 0, 0.55), 0 2px 10px rgba(0, 0, 0, 0.35), inset 0 1px 0 var(--glass-rim);
+        --glass-pill-active: rgba(255, 107, 87, 0.22);
       }
     }
 
     * {
       box-sizing: border-box;
       -webkit-tap-highlight-color: transparent;
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", Roboto, sans-serif;
     }
 
-    html, body {
-      margin: 0;
+    html {
       background-color: var(--bg);
-      color: var(--text);
+      -webkit-text-size-adjust: 100%;
     }
 
     body {
-      padding-top: env(safe-area-inset-top);
-      padding-bottom: 72px;
+      margin: 0;
+      padding: 0;
+      min-height: 100dvh;
+      background-color: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
     }
 
+    /* Top bar sits cleanly below the status bar / Dynamic Island + native iOS top blur */
     header {
       position: sticky;
-      top: env(safe-area-inset-top);
-      z-index: 10;
-      background: var(--card);
-      padding: 12px 16px;
+      top: 0;
+      z-index: 50;
+      background: var(--glass-bg);
+      -webkit-backdrop-filter: blur(22px) saturate(180%);
+      backdrop-filter: blur(22px) saturate(180%);
+      padding-top: calc(var(--safe-top) + 28px);
+      padding-right: 16px;
+      padding-bottom: 14px;
+      padding-left: 16px;
       border-bottom: 0.5px solid var(--border);
+      box-shadow: inset 0 -0.5px 0 rgba(255, 255, 255, 0.08);
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -85,6 +142,8 @@
       width: 30px;
       height: 30px;
       flex-shrink: 0;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
     }
 
     header h1 {
@@ -92,6 +151,12 @@
       font-size: 22px;
       font-weight: 700;
       letter-spacing: -0.4px;
+    }
+
+    /* Main scrollable content with bottom clearance above floating pill & home indicator */
+    main {
+      background: transparent;
+      padding-bottom: calc(var(--nav-height) + var(--safe-bottom) + 32px);
     }
 
     .container {
@@ -106,24 +171,36 @@
     /* Inputs & Buttons */
     input, select, textarea {
       width: 100%;
-      padding: 11px 12px;
-      border-radius: 10px;
-      border: 1px solid var(--border);
+      padding: 11px 13px;
+      border-radius: 12px;
+      border: 0.5px solid var(--border);
       background: var(--card);
       color: var(--text);
       font-size: 16px; /* Prevents iOS zoom on focus */
       margin-bottom: 10px;
+      transition: border-color 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft);
     }
 
     button {
       background: var(--accent);
       color: #fff;
       border: none;
-      border-radius: 10px;
+      border-radius: 12px;
       padding: 11px 16px;
       font-size: 15px;
       font-weight: 600;
       cursor: pointer;
+      transition: transform 0.14s ease, opacity 0.14s ease;
+    }
+
+    button:active {
+      transform: scale(0.97);
     }
 
     button.secondary {
@@ -140,16 +217,17 @@
     button.small {
       padding: 6px 12px;
       font-size: 13px;
-      border-radius: 8px;
+      border-radius: 9px;
     }
 
-    /* Cards & Lists */
+    /* Cards & Lists with subtle Liquid Glass sheen */
     .card {
       background: var(--card);
-      border-radius: 14px;
+      border-radius: 16px;
       padding: 14px;
       margin-bottom: 12px;
       border: 0.5px solid var(--border);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
     }
 
     .row {
@@ -178,12 +256,13 @@
       font-weight: 700;
       color: var(--subtext);
       background: var(--bg);
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
     }
 
     .badge {
       display: inline-block;
       padding: 3px 8px;
-      border-radius: 6px;
+      border-radius: 8px;
       font-size: 12px;
       font-weight: 600;
     }
@@ -209,55 +288,24 @@
       gap: 8px;
     }
 
-    /* Bottom Tab Bar */
-    nav.tab-bar {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: var(--card);
-      border-top: 0.5px solid var(--border);
-      display: flex;
-      justify-content: space-around;
-      padding: 8px 0;
-      z-index: 20;
-    }
-
-    nav.tab-bar button {
-      background: transparent;
-      color: var(--subtext);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 3px;
-      font-size: 11px;
-      font-weight: 500;
-      padding: 4px 16px;
-    }
-
-    nav.tab-bar button.active {
-      color: var(--accent);
-    }
-
-    nav.tab-bar svg {
-      width: 22px;
-      height: 22px;
-      fill: currentColor;
-    }
-
     .pill-filter {
       display: flex;
       gap: 8px;
       overflow-x: auto;
       padding-bottom: 8px;
       margin-bottom: 8px;
+      scrollbar-width: none;
+    }
+
+    .pill-filter::-webkit-scrollbar {
+      display: none;
     }
 
     .pill-filter button {
       background: var(--card);
       color: var(--text);
       border: 0.5px solid var(--border);
-      border-radius: 20px;
+      border-radius: 999px;
       padding: 6px 14px;
       font-size: 13px;
       white-space: nowrap;
@@ -268,10 +316,101 @@
       color: #fff;
       border-color: var(--accent);
     }
+
+    /* Floating iOS 27 Liquid Glass Pill Navigation */
+    nav.bottom-nav {
+      position: fixed;
+      left: 50%;
+      bottom: calc(var(--safe-bottom) + 8px);
+      transform: translateX(-50%) translateZ(0);
+      width: min(calc(100% - 28px), 440px);
+      height: var(--nav-height);
+      border-radius: 999px;
+      background: var(--glass-bg);
+      -webkit-backdrop-filter: blur(28px) saturate(190%);
+      backdrop-filter: blur(28px) saturate(190%);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--glass-shadow);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 5px 6px;
+      z-index: 100;
+    }
+
+    /* Specular top-edge refraction highlight across the glass capsule */
+    nav.bottom-nav::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.22) 0%,
+        rgba(255, 255, 255, 0.04) 38%,
+        rgba(255, 255, 255, 0) 100%
+      );
+      pointer-events: none;
+    }
+
+    nav.bottom-nav button {
+      position: relative;
+      flex: 1 1 0;
+      height: 100%;
+      background: transparent;
+      color: var(--subtext);
+      border-radius: 999px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: -0.1px;
+      padding: 4px 6px;
+      transition: background-color 0.2s ease, color 0.2s ease, transform 0.14s ease;
+    }
+
+    nav.bottom-nav button.active {
+      background: var(--glass-pill-active);
+      color: var(--accent);
+      font-weight: 600;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28);
+    }
+
+    nav.bottom-nav svg {
+      width: 21px;
+      height: 21px;
+      fill: currentColor;
+    }
+    .segmented {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 4px;
+      padding: 4px;
+      border-radius: 12px;
+      background: var(--bg);
+      border: 0.5px solid var(--border);
+    }
+
+    .segmented button {
+      background: transparent;
+      color: var(--subtext);
+      border-radius: 9px;
+      padding: 8px 10px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .segmented button.active {
+      background: var(--card);
+      color: var(--text);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
   </style>
 </head>
 <body>
-
   <header>
     <div class="header-brand">
       <svg class="header-logo" viewBox="0 0 128 128" aria-hidden="true">
@@ -292,79 +431,91 @@
     <span id="stashCount" class="subtext">0 threads</span>
   </header>
 
-  <main class="container">
-    <!-- VIEW 1: STASH & SEARCH -->
-    <section id="view-stash" class="view active">
-      <input type="search" id="searchInput" placeholder="Search number, color, or brand..." oninput="renderStash()" />
-      <div id="brandFilters" class="pill-filter"></div>
-      <div id="stashList"></div>
-    </section>
+  <main>
+    <div class="container">
+      <!-- VIEW 1: STASH & SEARCH -->
+      <section id="view-stash" class="view active">
+        <input type="search" id="searchInput" placeholder="Search number, color, or brand..." oninput="renderStash()" />
+        <div id="brandFilters" class="pill-filter"></div>
+        <div id="stashList"></div>
+      </section>
 
-    <!-- VIEW 2: ADD / BULK IMPORT -->
-    <section id="view-add" class="view">
-      <div class="card">
-        <h3 style="margin-top:0">Add Single Thread</h3>
-        <div class="grid-2">
-          <input type="text" id="addBrand" placeholder="Brand (e.g. DMC)" value="DMC" />
-          <input type="text" id="addNumber" placeholder="Number (e.g. 310)" />
+      <!-- VIEW 2: ADD / BULK IMPORT -->
+      <section id="view-add" class="view">
+        <div class="card">
+          <h3 style="margin-top:0">Add Single Thread</h3>
+          <div class="grid-2">
+            <input type="text" id="addBrand" placeholder="Brand (e.g. DMC)" value="DMC" />
+            <input type="text" id="addNumber" placeholder="Number (e.g. 310)" />
+          </div>
+          <div class="grid-2">
+            <input type="text" id="addColor" placeholder="Color Name (e.g. Black)" />
+            <input type="number" id="addQty" placeholder="Qty" value="1" min="0" />
+          </div>
+          <button style="width:100%" onclick="addSingleThread()">Add to Stash</button>
         </div>
-        <div class="grid-2">
-          <input type="text" id="addColor" placeholder="Color Name (e.g. Black)" />
-          <input type="number" id="addQty" placeholder="Qty" value="1" min="0" />
-        </div>
-        <button style="width:100%" onclick="addSingleThread()">Add to Stash</button>
-      </div>
 
-      <div class="card">
-        <h3 style="margin-top:0">Bulk Import</h3>
-        <p class="subtext" style="margin-top:-6px">
-          Paste one thread per line: <code>Brand, Number, Color</code> (or <code>Number, Color</code> to default to DMC).
-        </p>
-        <textarea id="bulkInput" rows="6" placeholder="DMC, 310, Black&#10;DMC, 666, Bright Red&#10;Anchor, 403, Black"></textarea>
-        <button class="secondary" style="width:100%" onclick="bulkImport()">Import List</button>
-      </div>
-    </section>
-
-    <!-- VIEW 3: PROJECTS -->
-    <section id="view-projects" class="view">
-      <div class="card">
-        <div class="row">
-          <input type="text" id="newProjectName" placeholder="New Project Name..." style="margin-bottom:0" />
-          <button onclick="createProject()">Create</button>
+        <div class="card">
+          <h3 style="margin-top:0">Bulk Import</h3>
+          <p class="subtext" style="margin-top:-6px">
+            Paste one thread per line: <code>Brand, Number, Color</code> (or <code>Number, Color</code> to default to DMC).
+          </p>
+          <textarea id="bulkInput" rows="6" placeholder="DMC, 310, Black&#10;DMC, 666, Bright Red&#10;Anchor, 403, Black"></textarea>
+          <button class="secondary" style="width:100%" onclick="bulkImport()">Import List</button>
         </div>
-      </div>
-      <div id="projectsList"></div>
-    </section>
+      </section>
 
-    <!-- VIEW 4: BACKUP & RASPBERRY PI SYNC -->
-    <section id="view-sync" class="view">
-      <div class="card">
-        <h3 style="margin-top:0">Raspberry Pi Sync (Optional)</h3>
-        <p class="subtext">Connect to your Pi via Tailscale HTTPS or local API.</p>
-        <input type="url" id="piUrl" placeholder="https://raspberrypi.tailnet.ts.net/api/data" />
-        <form onsubmit="return false;">
-          <input type="password" id="piToken" placeholder="Bearer API Token" autocomplete="current-password" />
-        </form>
-        <div class="grid-2">
-          <button onclick="pushToPi()">Push to Pi</button>
-          <button class="secondary" onclick="pullFromPi()">Pull from Pi</button>
+      <!-- VIEW 3: PROJECTS -->
+      <section id="view-projects" class="view">
+        <div class="card">
+          <div class="row">
+            <input type="text" id="newProjectName" placeholder="New Project Name..." style="margin-bottom:0" />
+            <button onclick="createProject()">Create</button>
+          </div>
         </div>
-        <p id="syncStatus" class="subtext" style="margin-bottom:0"></p>
-      </div>
+        <div id="projectsList"></div>
+      </section>
 
-      <div class="card">
-        <h3 style="margin-top:0">Manual JSON Backup</h3>
-        <div class="grid-2">
-          <button class="secondary" onclick="exportJSON()">Export File</button>
-          <button class="secondary" onclick="document.getElementById('importFile').click()">Import File</button>
+      <!-- VIEW 4: SETTINGS -->
+      <section id="view-settings" class="view">
+        <div class="card">
+          <h3 style="margin-top:0">Appearance</h3>
+          <p class="subtext" style="margin-top:-4px">Defaults to your system appearance setting.</p>
+          <div class="segmented" role="group" aria-label="Appearance Mode">
+            <button id="themeBtn-system" onclick="setThemeMode('system')">System</button>
+            <button id="themeBtn-light" onclick="setThemeMode('light')">Light</button>
+            <button id="themeBtn-dark" onclick="setThemeMode('dark')">Dark</button>
+          </div>
         </div>
-        <input type="file" id="importFile" accept=".json" style="display:none" onchange="importJSON(event)" />
-      </div>
-    </section>
+
+        <div class="card">
+          <h3 style="margin-top:0">Raspberry Pi Sync (Optional)</h3>
+          <p class="subtext">Connect to your Pi via Tailscale HTTPS or local API.</p>
+          <input type="url" id="piUrl" placeholder="https://raspberrypi.tailnet.ts.net/api/data" />
+          <form onsubmit="return false;">
+            <input type="password" id="piToken" placeholder="Bearer API Token" autocomplete="current-password" />
+          </form>
+          <div class="grid-2">
+            <button onclick="pushToPi()">Push to Pi</button>
+            <button class="secondary" onclick="pullFromPi()">Pull from Pi</button>
+          </div>
+          <p id="syncStatus" class="subtext" style="margin-bottom:0"></p>
+        </div>
+
+        <div class="card">
+          <h3 style="margin-top:0">Manual JSON Backup</h3>
+          <div class="grid-2">
+            <button class="secondary" onclick="exportJSON()">Export File</button>
+            <button class="secondary" onclick="document.getElementById('importFile').click()">Import File</button>
+          </div>
+          <input type="file" id="importFile" accept=".json" style="display:none" onchange="importJSON(event)" />
+        </div>
+      </section>
+    </div>
   </main>
 
-  <!-- BOTTOM NAVIGATION -->
-  <nav class="tab-bar">
+  <!-- FLOATING LIQUID GLASS BOTTOM NAVIGATION -->
+  <nav class="bottom-nav" aria-label="Primary Navigation">
     <button class="active" onclick="switchTab('stash', 'Stitch Check', this)">
       <svg viewBox="0 0 24 24"><path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/></svg>
       Stash
@@ -377,17 +528,57 @@
       <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
       Projects
     </button>
-    <button onclick="switchTab('sync', 'Sync & Backup', this)">
-      <svg viewBox="0 0 24 24"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>
-      Sync
+    <button onclick="switchTab('settings', 'Settings', this)">
+      <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.31.06-.63.06-.94s-.02-.63-.06-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.49.49 0 0 0-.59.22L2.74 8.87a.48.48 0 0 0 .12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+      Settings
     </button>
   </nav>
-
   <script>
     // State Management (migrates data if user previously used threadstash_v1)
     const STORAGE_KEY = 'stitchcheck_v1';
     const LEGACY_KEY = 'threadstash_v1';
     const CONFIG_KEY = 'stitchcheck_pi_config';
+    const THEME_KEY = 'stitchcheck_theme_mode';
+
+    function applyThemeMode(mode) {
+      const root = document.documentElement;
+      root.classList.remove('theme-light', 'theme-dark');
+      if (mode === 'light') {
+        root.classList.add('theme-light');
+      } else if (mode === 'dark') {
+        root.classList.add('theme-dark');
+      }
+
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const effectiveDark = mode === 'dark' || (mode === 'system' && prefersDark);
+      const themeMeta = document.querySelector('meta[name="theme-color"]:not([media])');
+      if (themeMeta) {
+        themeMeta.setAttribute('content', effectiveDark ? '#000000' : '#f2f2f7');
+      }
+
+      ['system', 'light', 'dark'].forEach(m => {
+        const btn = document.getElementById(`themeBtn-${m}`);
+        if (btn) btn.classList.toggle('active', m === mode);
+      });
+    }
+
+    function setThemeMode(mode) {
+      const valid = ['system', 'light', 'dark'].includes(mode) ? mode : 'system';
+      localStorage.setItem(THEME_KEY, valid);
+      applyThemeMode(valid);
+    }
+
+    function initTheme() {
+      const saved = localStorage.getItem(THEME_KEY) || 'system';
+      applyThemeMode(saved);
+      if (window.matchMedia) {
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+          if ((localStorage.getItem(THEME_KEY) || 'system') === 'system') {
+            applyThemeMode('system');
+          }
+        });
+      }
+    }
 
     const savedData = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_KEY);
 
@@ -423,7 +614,7 @@
       document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
       document.getElementById(`view-${tabId}`).classList.add('active');
       document.getElementById('pageTitle').textContent = title;
-      document.querySelectorAll('nav.tab-bar button').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('nav.bottom-nav button').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
 
       if (tabId === 'stash') renderStash();
@@ -767,6 +958,7 @@
     }
 
     // Init
+    initTheme();
     loadPiConfig();
     updateHeaderCount();
     renderStash();
