@@ -18,6 +18,9 @@
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
   <link rel="manifest" href="manifest.json" />
 
+  <!-- SheetJS for .xlsx and .csv file parsing -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
+
   <style>
     :root,
     :root.theme-light {
@@ -165,7 +168,7 @@
       overflow-x: clip;
       -webkit-overflow-scrolling: touch;
       background: transparent;
-      padding-bottom: calc(var(--nav-height) + var(--safe-bottom) + 32px);
+      padding-bottom: calc(var(--nav-height) + var(--safe-bottom) + 24px);
     }
 
     .container {
@@ -188,6 +191,15 @@
       font-size: 16px; /* Prevents iOS zoom on focus */
       margin-bottom: 10px;
       transition: border-color 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    input[type="color"] {
+      width: 52px;
+      height: 44px;
+      padding: 4px;
+      margin-bottom: 0;
+      flex-shrink: 0;
+      cursor: pointer;
     }
 
     input:focus, select:focus, textarea:focus {
@@ -250,6 +262,11 @@
       display: flex;
       align-items: center;
       gap: 12px;
+      min-width: 0;
+    }
+
+    .thread-meta > div:last-child {
+      min-width: 0;
     }
 
     .swatch {
@@ -297,6 +314,32 @@
       gap: 8px;
     }
 
+    .stash-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .stash-toolbar .pill-filter {
+      flex: 1 1 auto;
+      min-width: 0;
+      padding-bottom: 0;
+      margin-bottom: 0;
+    }
+
+    .stash-sort-select {
+      width: auto;
+      min-width: 132px;
+      padding: 7px 10px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 999px;
+      margin-bottom: 0;
+      flex-shrink: 0;
+    }
+
     .pill-filter {
       display: flex;
       gap: 8px;
@@ -330,7 +373,7 @@
     nav.bottom-nav {
       position: fixed;
       left: 50%;
-      bottom: calc(var(--safe-bottom) + 6px);
+      bottom: var(--safe-bottom);
       transform: translate3d(-50%, 0, 0);
       -webkit-transform: translate3d(-50%, 0, 0);
       backface-visibility: hidden;
@@ -421,6 +464,35 @@
       color: var(--text);
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     }
+
+    /* Stash thread edit modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 180;
+      background: rgba(0, 0, 0, 0.45);
+      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal-card {
+      width: 100%;
+      max-width: 420px;
+      background: var(--card-elevated);
+      border-radius: 20px;
+      padding: 18px;
+      border: 0.5px solid var(--border);
+      box-shadow: var(--glass-shadow);
+    }
+
     /* Sleek auto-dismissing toast notification */
     .toast-container {
       position: fixed;
@@ -499,12 +571,44 @@
   </header>
   <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="true"></div>
 
+  <!-- EDIT STASH COLOR & SWATCH MODAL -->
+  <div id="editThreadModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="editThreadTitle" onclick="if (event.target === this) closeThreadEditor()">
+    <div class="modal-card">
+      <h3 id="editThreadTitle" style="margin-top:0;margin-bottom:4px">Edit Thread Appearance</h3>
+      <p id="editThreadSubtitle" class="subtext" style="margin-top:0;margin-bottom:14px"></p>
+
+      <label for="editThreadColor" class="subtext" style="display:block;margin-bottom:4px">Color Description</label>
+      <input type="text" id="editThreadColor" placeholder="e.g. Heather Charcoal" />
+
+      <label class="subtext" style="display:block;margin-bottom:4px">Swatch Color</label>
+      <div class="row" style="margin-bottom:16px">
+        <input type="color" id="editSwatchPicker" aria-label="Swatch color picker" oninput="syncHexFromPicker()" />
+        <input type="text" id="editSwatchHex" placeholder="#8e8e93" style="margin-bottom:0;flex:1" oninput="syncPickerFromHex()" />
+      </div>
+
+      <div class="grid-2">
+        <button type="button" class="secondary" onclick="closeThreadEditor()">Cancel</button>
+        <button type="button" onclick="saveThreadEditor()">Save</button>
+      </div>
+    </div>
+  </div>
+
   <main>
     <div class="container">
       <!-- VIEW 1: STASH & SEARCH -->
       <section id="view-stash" class="view active">
         <input type="search" id="searchInput" placeholder="Search number, color, or brand..." oninput="renderStash()" />
-        <div id="brandFilters" class="pill-filter"></div>
+        <div class="stash-toolbar">
+          <div id="brandFilters" class="pill-filter"></div>
+          <select id="stashSort" class="stash-sort-select" aria-label="Sort stash threads" onchange="setStashSort(this.value)">
+            <option value="number-asc">Number ↑</option>
+            <option value="number-desc">Number ↓</option>
+            <option value="color-asc">Color A–Z</option>
+            <option value="color-desc">Color Z–A</option>
+            <option value="brand-asc">Brand A–Z</option>
+            <option value="qty-desc">Qty High–Low</option>
+          </select>
+        </div>
         <div id="stashList"></div>
       </section>
 
@@ -532,9 +636,24 @@
         <div class="card">
           <h3 style="margin-top:0">Bulk Import</h3>
           <p class="subtext" style="margin-top:-6px">
-            Paste one thread per line: <code>Brand, Number, Color</code> (or <code>Number, Color</code> to default to DMC).
+            Paste rows or upload a <code>.csv</code> / <code>.xlsx</code> file: <code>Brand, Number, Color</code> (or <code>Number, Color</code> / <code>Number</code>). Header rows are skipped automatically.
           </p>
-          <textarea id="bulkInput" rows="6" placeholder="DMC, 310, Black&#10;DMC, 666, Bright Red&#10;Anchor, 403, Black"></textarea>
+
+          <label for="bulkDefaultBrand" class="subtext" style="display:block;margin-bottom:4px">Default Brand Type (when omitted)</label>
+          <select id="bulkDefaultBrand">
+            <option value="DMC" selected>DMC</option>
+            <option value="Anchor">Anchor</option>
+            <option value="Sulky">Sulky</option>
+            <option value="Cosmo">Cosmo</option>
+          </select>
+
+          <div class="row" style="margin-bottom:10px">
+            <button type="button" class="secondary small" style="flex:1" onclick="document.getElementById('bulkImportFile').click()">Upload .CSV or .XLSX</button>
+            <span id="bulkFileName" class="subtext" style="max-width:55%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">No file selected</span>
+          </div>
+          <input type="file" id="bulkImportFile" accept=".csv,.xlsx,.xls,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" style="display:none" onchange="handleBulkFileUpload(event)" />
+
+          <textarea id="bulkInput" rows="6" placeholder="DMC, 310, Black&#10;666&#10;Weeks Dye Works, 1104"></textarea>
           <button class="secondary" style="width:100%" onclick="bulkImport()">Import List</button>
         </div>
       </section>
@@ -613,6 +732,7 @@
     const LEGACY_KEY = 'threadstash_v1';
     const CONFIG_KEY = 'stitchcheck_pi_config';
     const THEME_KEY = 'stitchcheck_theme_mode';
+    const SORT_KEY = 'stitchcheck_stash_sort';
 
     function syncPillNavAnchor() {
       const nav = document.querySelector('nav.bottom-nav');
@@ -670,23 +790,13 @@
     const savedData = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_KEY);
 
     let state = savedData ? JSON.parse(savedData) : {
-      threads: [
-        { id: '1', brand: 'DMC', number: '310', color: 'Black', qty: 2 },
-        { id: '2', brand: 'DMC', number: 'B5200', color: 'Snow White', qty: 1 }
-      ],
-      projects: [
-        {
-          id: 'p1',
-          name: 'Sample Sampler',
-          requirements: [
-            { brand: 'DMC', number: '310', color: 'Black' },
-            { brand: 'DMC', number: '817', color: 'Very Dark Coral Red' }
-          ]
-        }
-      ]
+      threads: [],
+      projects: []
     };
 
     let activeBrandFilter = 'ALL';
+    let activeStashSort = localStorage.getItem(SORT_KEY) || 'number-asc';
+    let editingThreadId = null;
 
     function saveState() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -711,7 +821,74 @@
       if (tabId === 'projects') renderProjects();
     }
 
-    // --- STASH FUNCTIONS ---
+    // --- STASH & BULK IMPORT FUNCTIONS ---
+    const HEADER_TOKENS = new Set([
+      'brand', 'type', 'thread type', 'brand type', 'floss', 'floss brand',
+      'number', 'no', 'no.', 'num', 'code', 'thread number', 'thread code', 'skien', 'skein',
+      'color', 'colour', 'color name', 'colour name', 'description', 'desc', 'name', 'shade',
+      'qty', 'quantity', 'count', 'amount', 'stash'
+    ]);
+
+    function isBulkHeaderRow(parts) {
+      const cleaned = parts.map(p => p.trim().toLowerCase().replace(/\s+/g, ' ')).filter(Boolean);
+      if (cleaned.length === 0) return false;
+      const matches = cleaned.filter(token => HEADER_TOKENS.has(token)).length;
+      return matches >= 2 || (cleaned.length === 1 && (cleaned[0] === 'brand' || cleaned[0] === 'number' || cleaned[0] === 'code' || cleaned[0] === 'color'));
+    }
+
+    function parseBulkRowsToText(rows) {
+      return rows
+        .map(row => Array.isArray(row) ? row.map(cell => cell == null ? '' : String(cell).trim()) : [])
+        .filter(row => row.some(cell => cell !== ''))
+        .map(row => {
+          while (row.length > 0 && row[row.length - 1] === '') row.pop();
+          return row.join(', ');
+        })
+        .join('\n');
+    }
+
+    async function handleBulkFileUpload(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+
+      const labelEl = document.getElementById('bulkFileName');
+      if (labelEl) labelEl.textContent = file.name;
+
+      const lowerName = file.name.toLowerCase();
+      try {
+        if (lowerName.endsWith('.csv')) {
+          const text = await file.text();
+          if (typeof XLSX !== 'undefined') {
+            const wb = XLSX.read(text, { type: 'string' });
+            const firstSheet = wb.Sheets[wb.SheetNames[0]];
+            const rows = XLSX.utils.sheet_to_json(firstSheet, { header: 1, raw: false });
+            document.getElementById('bulkInput').value = parseBulkRowsToText(rows);
+          } else {
+            document.getElementById('bulkInput').value = text.trim();
+          }
+          showToast(`Loaded ${file.name}`);
+        } else if (lowerName.endsWith('.xlsx') || lowerName.endsWith('.xls')) {
+          if (typeof XLSX === 'undefined') {
+            showToast('Spreadsheet parser still loading—try again in a moment.', 'warn');
+            event.target.value = '';
+            return;
+          }
+          const buffer = await file.arrayBuffer();
+          const wb = XLSX.read(buffer, { type: 'array' });
+          const firstSheet = wb.Sheets[wb.SheetNames[0]];
+          const rows = XLSX.utils.sheet_to_json(firstSheet, { header: 1, raw: false });
+          document.getElementById('bulkInput').value = parseBulkRowsToText(rows);
+          showToast(`Loaded ${file.name}`);
+        } else {
+          showToast('Please select a .csv or .xlsx file.', 'warn');
+        }
+      } catch (err) {
+        showToast(`Could not read file: ${err.message}`, 'error');
+      } finally {
+        event.target.value = '';
+      }
+    }
+
     function addSingleThread() {
       const brand = document.getElementById('addBrand').value.trim() || 'DMC';
       const number = document.getElementById('addNumber').value.trim();
@@ -739,41 +916,106 @@
       );
       if (existing) {
         existing.qty += qtyToAdd;
-        if (color && !existing.color) existing.color = color;
+        if (color && (!existing.color || existing.color === 'Unnamed')) {
+          existing.color = color;
+        }
       } else {
         state.threads.push({
           id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
           brand,
           number,
-          color: color || 'Unnamed',
+          color: color || '',
           qty: qtyToAdd
         });
       }
     }
 
+    function looksLikeThreadCode(val) {
+      if (!val) return false;
+      const clean = val.trim().toUpperCase();
+      if (/^B?\d+[A-Z0-9-]*$/.test(clean)) return true;
+      if (clean === 'BLANC' || clean === 'ECRU') return true;
+      return false;
+    }
+
+    function resolveBulkEntry(parts, fallbackBrand) {
+      if (parts.length >= 3) {
+        const brand = parts[0] || fallbackBrand;
+        const number = parts[1];
+        let color = parts.slice(2).join(' ').trim();
+        if (!color && normalizeBrandKey(brand)) {
+          const match = lookupThreadCatalog(brand, number);
+          if (match) color = match.name;
+        }
+        return { brand, number, color };
+      }
+
+      if (parts.length === 2) {
+        const firstAsKnownBrand = normalizeBrandKey(parts[0]);
+        if (firstAsKnownBrand) {
+          const brand = parts[0];
+          const number = parts[1];
+          const match = lookupThreadCatalog(brand, number);
+          return { brand, number, color: match ? match.name : '' };
+        }
+
+        // If first column is a non-numeric brand name and second column is a thread code (e.g. "Weeks Dye Works, 1104")
+        if (!looksLikeThreadCode(parts[0]) && looksLikeThreadCode(parts[1])) {
+          return { brand: parts[0], number: parts[1], color: '' };
+        }
+
+        // Otherwise treat as (Number, Color) using the selected fallback brand
+        const brand = fallbackBrand;
+        const number = parts[0];
+        let color = parts[1];
+        if (!color && normalizeBrandKey(brand)) {
+          const match = lookupThreadCatalog(brand, number);
+          if (match) color = match.name;
+        }
+        return { brand, number, color };
+      }
+
+      const brand = fallbackBrand;
+      const number = parts[0];
+      const match = normalizeBrandKey(brand) ? lookupThreadCatalog(brand, number) : null;
+      return { brand, number, color: match ? match.name : '' };
+    }
+
     function bulkImport() {
       const raw = document.getElementById('bulkInput').value.trim();
       if (!raw) return;
-      const lines = raw.split('\n');
+
+      const defaultBrandSelect = document.getElementById('bulkDefaultBrand');
+      const fallbackBrand = (defaultBrandSelect && defaultBrandSelect.value) || 'DMC';
+
+      const lines = raw.split(/\r?\n/);
       let count = 0;
+      let skippedHeaders = 0;
 
       lines.forEach(line => {
-        const parts = line.split(',').map(p => p.trim()).filter(Boolean);
-        if (parts.length >= 3) {
-          upsertThread(parts[0], parts[1], parts.slice(2).join(' '), 1);
-          count++;
-        } else if (parts.length === 2) {
-          upsertThread('DMC', parts[0], parts[1], 1);
-          count++;
-        } else if (parts.length === 1) {
-          upsertThread('DMC', parts[0], '', 1);
-          count++;
+        if (!line.trim()) return;
+        const parts = line.split(',').map(p => p.trim());
+        if (isBulkHeaderRow(parts)) {
+          skippedHeaders++;
+          return;
         }
+        const nonEmpty = parts.filter(Boolean);
+        if (nonEmpty.length === 0) return;
+
+        const entry = resolveBulkEntry(parts, fallbackBrand);
+        if (!entry.number) return;
+
+        upsertThread(entry.brand, entry.number, entry.color, 1);
+        count++;
       });
 
       saveState();
       document.getElementById('bulkInput').value = '';
-      showToast(`Imported ${count} thread${count === 1 ? '' : 's'}`);
+      const fileLabel = document.getElementById('bulkFileName');
+      if (fileLabel) fileLabel.textContent = 'No file selected';
+
+      const headerNote = skippedHeaders > 0 ? ` (skipped ${skippedHeaders} header row${skippedHeaders === 1 ? '' : 's'})` : '';
+      showToast(`Imported ${count} thread${count === 1 ? '' : 's'}${headerNote}`);
     }
 
     function adjustQty(id, delta) {
@@ -791,11 +1033,119 @@
       renderStash();
     }
 
+    function normalizeHexForPicker(colorValue) {
+      if (typeof colorValue === 'string') {
+        const m = colorValue.trim().match(/^#([0-9a-fA-F]{6})$/);
+        if (m) return '#' + m[1].toLowerCase();
+      }
+      const temp = document.createElement('div');
+      temp.style.color = '#8e8e93';
+      temp.style.color = colorValue || '#8e8e93';
+      document.body.appendChild(temp);
+      const computed = getComputedStyle(temp).color;
+      document.body.removeChild(temp);
+      const rgb = computed.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/i);
+      if (!rgb) return '#8e8e93';
+      const toHex = n => Number(n).toString(16).padStart(2, '0');
+      return `#${toHex(rgb[1])}${toHex(rgb[2])}${toHex(rgb[3])}`;
+    }
+
+    function openThreadEditor(id) {
+      const thread = state.threads.find(t => t.id === id);
+      if (!thread) return;
+      editingThreadId = id;
+
+      document.getElementById('editThreadSubtitle').textContent = `${thread.brand} ${thread.number}`;
+      document.getElementById('editThreadColor').value = thread.color && thread.color !== 'Unnamed' ? thread.color : '';
+
+      const currentSwatch = getThreadSwatchHex(thread);
+      const hexVal = normalizeHexForPicker(currentSwatch);
+      document.getElementById('editSwatchPicker').value = hexVal;
+      document.getElementById('editSwatchHex').value = thread.swatchHex || hexVal;
+
+      document.getElementById('editThreadModal').classList.add('open');
+      setTimeout(() => document.getElementById('editThreadColor').focus(), 40);
+    }
+
+    function closeThreadEditor() {
+      editingThreadId = null;
+      document.getElementById('editThreadModal').classList.remove('open');
+    }
+
+    function syncHexFromPicker() {
+      const pickerVal = document.getElementById('editSwatchPicker').value;
+      document.getElementById('editSwatchHex').value = pickerVal;
+    }
+
+    function syncPickerFromHex() {
+      const rawHex = document.getElementById('editSwatchHex').value.trim();
+      const match = rawHex.match(/^#([0-9a-fA-F]{6})$/);
+      if (match) {
+        document.getElementById('editSwatchPicker').value = '#' + match[1].toLowerCase();
+      }
+    }
+
+    function saveThreadEditor() {
+      if (!editingThreadId) return;
+      const thread = state.threads.find(t => t.id === editingThreadId);
+      if (!thread) return;
+
+      const colorName = document.getElementById('editThreadColor').value.trim();
+      const rawHex = document.getElementById('editSwatchHex').value.trim();
+
+      thread.color = colorName;
+      if (/^#[0-9a-fA-F]{6}$/.test(rawHex)) {
+        thread.swatchHex = rawHex.toLowerCase();
+      } else if (!rawHex) {
+        delete thread.swatchHex;
+      }
+
+      saveState();
+      closeThreadEditor();
+      renderStash();
+      showToast(`Updated ${thread.brand} ${thread.number}`);
+    }
+
+    function setStashSort(sortMode) {
+      activeStashSort = sortMode || 'number-asc';
+      localStorage.setItem(SORT_KEY, activeStashSort);
+      renderStash();
+    }
+
+    function compareStashThreads(a, b, sortMode) {
+      const numCmp = a.number.localeCompare(b.number, undefined, { numeric: true, sensitivity: 'base' });
+      const colA = (a.color && a.color !== 'Unnamed' ? a.color : '').trim();
+      const colB = (b.color && b.color !== 'Unnamed' ? b.color : '').trim();
+      const colCmp = colA.localeCompare(colB, undefined, { sensitivity: 'base' });
+      const brandCmp = (a.brand || '').localeCompare(b.brand || '', undefined, { sensitivity: 'base' });
+
+      switch (sortMode) {
+        case 'number-desc':
+          return -numCmp || brandCmp;
+        case 'color-asc':
+          if (!colA && colB) return 1;
+          if (colA && !colB) return -1;
+          return colCmp || numCmp;
+        case 'color-desc':
+          if (!colA && colB) return 1;
+          if (colA && !colB) return -1;
+          return -colCmp || numCmp;
+        case 'brand-asc':
+          return brandCmp || numCmp;
+        case 'qty-desc':
+          return (b.qty - a.qty) || numCmp;
+        case 'number-asc':
+        default:
+          return numCmp || brandCmp;
+      }
+    }
+
     function renderBrandPills() {
-      const brands = ['ALL', ...new Set(state.threads.map(t => t.brand))];
+      const brands = ['ALL', ...new Set(state.threads.map(t => t.brand).filter(Boolean))];
+      if (!brands.includes(activeBrandFilter)) activeBrandFilter = 'ALL';
       const container = document.getElementById('brandFilters');
       container.innerHTML = brands.map(b => `
-        <button class="${activeBrandFilter === b ? 'active' : ''}" onclick="setBrandFilter('${b}')">${b}</button>
+        <button class="${activeBrandFilter === b ? 'active' : ''}" onclick="setBrandFilter('${escapeHtml(b)}')">${escapeHtml(b)}</button>
       `).join('');
     }
 
@@ -806,6 +1156,9 @@
 
     function renderStash() {
       renderBrandPills();
+      const sortEl = document.getElementById('stashSort');
+      if (sortEl) sortEl.value = activeStashSort;
+
       const query = document.getElementById('searchInput').value.toLowerCase().trim();
       const list = document.getElementById('stashList');
 
@@ -813,32 +1166,36 @@
         .filter(t => activeBrandFilter === 'ALL' || t.brand === activeBrandFilter)
         .filter(t =>
           t.number.toLowerCase().includes(query) ||
-          t.color.toLowerCase().includes(query) ||
+          (t.color || '').toLowerCase().includes(query) ||
           t.brand.toLowerCase().includes(query)
         )
-        .sort((a, b) => a.number.localeCompare(b.number, undefined, { numeric: true }));
+        .sort((a, b) => compareStashThreads(a, b, activeStashSort));
 
       if (filtered.length === 0) {
-        list.innerHTML = `<p class="subtext" style="text-align:center;margin-top:32px">No matching threads found.</p>`;
+        list.innerHTML = `<p class="subtext" style="text-align:center;margin-top:32px">No threads in your stash yet.</p>`;
         return;
       }
 
-      list.innerHTML = filtered.map(t => `
-        <div class="card row">
-          <div class="thread-meta">
-            <div class="swatch" style="background:${getThreadSwatchHex(t)}"></div>
-            <div>
-              <strong>${escapeHtml(t.brand)} ${escapeHtml(t.number)}</strong>
-              <div class="subtext">${escapeHtml(t.color)}</div>
+      list.innerHTML = filtered.map(t => {
+        const descText = t.color && t.color !== 'Unnamed' ? escapeHtml(t.color) : 'No color description';
+        return `
+          <div class="card row">
+            <div class="thread-meta">
+              <div class="swatch" style="background:${getThreadSwatchHex(t)}"></div>
+              <div>
+                <strong>${escapeHtml(t.brand)} ${escapeHtml(t.number)}</strong>
+                <div class="subtext">${descText}</div>
+              </div>
+            </div>
+            <div class="row" style="gap:6px;flex-shrink:0">
+              <button class="secondary small" onclick="openThreadEditor('${t.id}')">Edit</button>
+              <button class="secondary small" onclick="adjustQty('${t.id}', -1)">−</button>
+              <span style="min-width:20px;text-align:center;font-weight:600">${t.qty}</span>
+              <button class="secondary small" onclick="adjustQty('${t.id}', 1)">+</button>
             </div>
           </div>
-          <div class="row" style="gap:6px">
-            <button class="secondary small" onclick="adjustQty('${t.id}', -1)">−</button>
-            <span style="min-width:22px;text-align:center;font-weight:600">${t.qty}</span>
-            <button class="secondary small" onclick="adjustQty('${t.id}', 1)">+</button>
-          </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
     }
 
     // --- PROJECT FUNCTIONS ---
@@ -1592,6 +1949,9 @@
     // --- UTILITIES ---
     function getThreadSwatchHex(thread) {
       if (thread) {
+        if (thread.swatchHex && /^#[0-9a-fA-F]{6}$/.test(thread.swatchHex)) {
+          return thread.swatchHex;
+        }
         const match = lookupThreadCatalog(thread.brand, thread.number);
         if (match && match.hex) return match.hex;
       }
