@@ -27,7 +27,9 @@
       color-scheme: light;
       --safe-top: env(safe-area-inset-top, 0px);
       --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --header-height: calc(var(--safe-top) + 74px);
       --nav-height: 64px;
+      --nav-bottom-offset: calc(var(--safe-bottom) + 16px);
 
       --bg: #f2f2f7;
       --card: #ffffff;
@@ -42,8 +44,8 @@
       --orange: #c93400;
 
       /* iOS Light Liquid Glass tokens */
-      --glass-bg: rgba(255, 255, 255, 0.72);
-      --glass-border: rgba(255, 255, 255, 0.85);
+      --glass-bg: rgba(255, 255, 255, 0.76);
+      --glass-border: rgba(255, 255, 255, 0.88);
       --glass-rim: rgba(255, 255, 255, 0.95);
       --glass-shadow: 0 12px 32px rgba(28, 28, 30, 0.12), 0 2px 8px rgba(28, 28, 30, 0.06), inset 0 1px 0 var(--glass-rim);
       --glass-pill-active: rgba(232, 93, 74, 0.16);
@@ -64,7 +66,7 @@
       --orange: #ff9f0a;
 
       /* Dark Liquid Glass tokens */
-      --glass-bg: rgba(34, 34, 38, 0.62);
+      --glass-bg: rgba(34, 34, 38, 0.68);
       --glass-border: rgba(255, 255, 255, 0.18);
       --glass-rim: rgba(255, 255, 255, 0.28);
       --glass-shadow: 0 14px 36px rgba(0, 0, 0, 0.55), 0 2px 10px rgba(0, 0, 0, 0.35), inset 0 1px 0 var(--glass-rim);
@@ -87,7 +89,7 @@
         --orange: #ff9f0a;
 
         /* Dark Liquid Glass tokens */
-        --glass-bg: rgba(34, 34, 38, 0.62);
+        --glass-bg: rgba(34, 34, 38, 0.68);
         --glass-border: rgba(255, 255, 255, 0.18);
         --glass-rim: rgba(255, 255, 255, 0.28);
         --glass-shadow: 0 14px 36px rgba(0, 0, 0, 0.55), 0 2px 10px rgba(0, 0, 0, 0.35), inset 0 1px 0 var(--glass-rim);
@@ -103,27 +105,29 @@
 
     html {
       height: 100%;
-      height: 100dvh;
       background-color: var(--bg);
       -webkit-text-size-adjust: 100%;
-      overflow: hidden;
+      overflow-x: clip;
+      overscroll-behavior-y: auto;
     }
 
     body {
       margin: 0;
       padding: 0;
-      height: 100%;
-      height: 100dvh;
+      min-height: 100vh;
       background-color: var(--bg);
       color: var(--text);
-      overflow: hidden;
+      overflow-x: clip;
+      overscroll-behavior-y: auto;
       display: flex;
       flex-direction: column;
     }
 
-    /* Top bar stays fixed at the top while only <main> scrolls/rubber-bands */
     header {
-      flex: 0 0 auto;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
       z-index: 50;
       background: var(--glass-bg);
       -webkit-backdrop-filter: blur(22px) saturate(180%);
@@ -137,6 +141,8 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      transform: translate3d(0, calc(-1 * var(--vv-top, 0px)), 0);
+      -webkit-transform: translate3d(0, calc(-1 * var(--vv-top, 0px)), 0);
     }
 
     .header-brand {
@@ -160,27 +166,26 @@
       letter-spacing: -0.4px;
     }
 
-    /* Main scrollable tab body with bottom clearance above floating pill & home indicator */
     main {
-      flex: 1 1 auto;
-      min-height: 0;
-      overflow-y: auto;
-      overflow-x: clip;
-      -webkit-overflow-scrolling: touch;
-      background: transparent;
-      padding-bottom: calc(var(--nav-height) + var(--safe-bottom) + 24px);
+      flex: 1 0 auto;
+      background-color: var(--bg);
+      display: flex;
+      flex-direction: column;
+      padding-top: var(--header-height);
+      padding-bottom: calc(var(--nav-height) + var(--safe-bottom) + 28px);
     }
 
     .container {
-      padding: 16px;
+      width: 100%;
+      padding: 16px 16px 8px;
       max-width: 680px;
       margin: 0 auto;
+      background-color: transparent;
     }
 
     .view { display: none; }
     .view.active { display: block; }
 
-    /* Inputs & Buttons */
     input, select, textarea {
       width: 100%;
       padding: 11px 13px;
@@ -188,7 +193,7 @@
       border: 0.5px solid var(--border);
       background: var(--card);
       color: var(--text);
-      font-size: 16px; /* Prevents iOS zoom on focus */
+      font-size: 16px;
       margin-bottom: 10px;
       transition: border-color 0.18s ease, box-shadow 0.18s ease;
     }
@@ -200,6 +205,15 @@
       margin-bottom: 0;
       flex-shrink: 0;
       cursor: pointer;
+    }
+
+    input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      margin: 0;
+      accent-color: var(--accent);
+      cursor: pointer;
+      flex-shrink: 0;
     }
 
     input:focus, select:focus, textarea:focus {
@@ -241,7 +255,36 @@
       border-radius: 9px;
     }
 
-    /* Cards & Lists with subtle Liquid Glass sheen */
+    button.icon-btn {
+      width: 34px;
+      height: 34px;
+      padding: 0;
+      border-radius: 9px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    button.icon-btn svg {
+      width: 16px;
+      height: 16px;
+      fill: currentColor;
+    }
+
+    .qty-stepper {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .qty-stepper input[type="number"] {
+      width: 76px;
+      margin-bottom: 0;
+      text-align: center;
+      font-weight: 600;
+    }
+
     .card {
       background: var(--card);
       border-radius: 16px;
@@ -281,7 +324,7 @@
       font-size: 11px;
       font-weight: 700;
       color: var(--subtext);
-      background: var(--bg);
+      background: var(--card-elevated);
       box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
     }
 
@@ -303,6 +346,12 @@
       color: var(--red);
     }
 
+    .badge.alias {
+      background: var(--accent-soft);
+      color: var(--accent);
+      margin-left: 4px;
+    }
+
     .subtext {
       color: var(--subtext);
       font-size: 13px;
@@ -319,7 +368,7 @@
       align-items: center;
       justify-content: space-between;
       gap: 10px;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
 
     .stash-toolbar .pill-filter {
@@ -369,16 +418,56 @@
       border-color: var(--accent);
     }
 
-    /* Floating iOS 27 Liquid Glass Pill Navigation - locked at bottom */
+    .color-dot {
+      display: inline-block;
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      margin-right: 5px;
+      border: 0.5px solid rgba(0, 0, 0, 0.25);
+      vertical-align: middle;
+    }
+
+    .mapping-box {
+      background: var(--card-elevated);
+      border: 0.5px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 12px;
+      margin-bottom: 10px;
+    }
+
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .shopping-item {
+      padding: 10px 0;
+      border-top: 0.5px solid var(--border);
+    }
+
+    .shopping-item.checked strong,
+    .shopping-item.checked .shop-label {
+      text-decoration: line-through;
+      opacity: 0.55;
+    }
+
+    /* Floating iOS 27 Liquid Glass Pill Navigation */
     nav.bottom-nav {
+      --nav-lift: 0px;
+      --vv-top: 0px;
       position: fixed;
       left: 50%;
-      bottom: var(--safe-bottom);
-      transform: translate3d(-50%, 0, 0);
-      -webkit-transform: translate3d(-50%, 0, 0);
+      bottom: var(--nav-bottom-offset);
+      transform: translate3d(-50%, calc(var(--nav-lift) - var(--vv-top)), 0);
+      -webkit-transform: translate3d(-50%, calc(var(--nav-lift) - var(--vv-top)), 0);
       backface-visibility: hidden;
       -webkit-backface-visibility: hidden;
-      will-change: transform;
       width: min(calc(100% - 24px), 440px);
       height: var(--nav-height);
       border-radius: 999px;
@@ -392,9 +481,16 @@
       align-items: center;
       padding: 5px 6px;
       z-index: 100;
+      transition: opacity 0.16s ease;
     }
 
-    /* Specular top-edge refraction highlight across the glass capsule */
+    nav.bottom-nav.keyboard-hidden {
+      opacity: 0;
+      pointer-events: none;
+      transform: translate3d(-50%, 140%, 0);
+      -webkit-transform: translate3d(-50%, 140%, 0);
+    }
+
     nav.bottom-nav::before {
       content: "";
       position: absolute;
@@ -440,13 +536,14 @@
       height: 21px;
       fill: currentColor;
     }
+
     .segmented {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 4px;
       padding: 4px;
       border-radius: 12px;
-      background: var(--bg);
+      background: var(--card-elevated);
       border: 0.5px solid var(--border);
     }
 
@@ -465,7 +562,6 @@
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     }
 
-    /* Stash thread edit modal */
     .modal-backdrop {
       position: fixed;
       inset: 0;
@@ -485,7 +581,9 @@
 
     .modal-card {
       width: 100%;
-      max-width: 420px;
+      max-width: 440px;
+      max-height: 88dvh;
+      overflow-y: auto;
       background: var(--card-elevated);
       border-radius: 20px;
       padding: 18px;
@@ -493,10 +591,9 @@
       box-shadow: var(--glass-shadow);
     }
 
-    /* Sleek auto-dismissing toast notification */
     .toast-container {
       position: fixed;
-      top: calc(var(--safe-top) + 74px);
+      top: calc(var(--header-height) + 12px);
       left: 50%;
       transform: translateX(-50%);
       z-index: 200;
@@ -571,14 +668,54 @@
   </header>
   <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="true"></div>
 
-  <!-- EDIT STASH COLOR & SWATCH MODAL -->
+  <!-- EDIT STASH COLOR, FAMILY, QTY & SWATCH MODAL -->
   <div id="editThreadModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="editThreadTitle" onclick="if (event.target === this) closeThreadEditor()">
     <div class="modal-card">
-      <h3 id="editThreadTitle" style="margin-top:0;margin-bottom:4px">Edit Thread Appearance</h3>
+      <h3 id="editThreadTitle" style="margin-top:0;margin-bottom:4px">Edit Thread</h3>
       <p id="editThreadSubtitle" class="subtext" style="margin-top:0;margin-bottom:14px"></p>
+
+      <label for="editThreadQty" class="subtext" style="display:block;margin-bottom:4px">Quantity</label>
+      <div class="qty-stepper">
+        <button type="button" class="secondary small" onclick="stepEditorQty(-1)" aria-label="Decrease quantity">−</button>
+        <input type="number" id="editThreadQty" min="0" value="1" />
+        <button type="button" class="secondary small" onclick="stepEditorQty(1)" aria-label="Increase quantity">+</button>
+      </div>
 
       <label for="editThreadColor" class="subtext" style="display:block;margin-bottom:4px">Color Description</label>
       <input type="text" id="editThreadColor" placeholder="e.g. Heather Charcoal" />
+
+      <label for="editColorFamily" class="subtext" style="display:block;margin-bottom:4px">Color Family</label>
+      <select id="editColorFamily">
+        <option value="Auto">Auto-detect from swatch / name</option>
+        <option value="Red">Red</option>
+        <option value="Orange">Orange</option>
+        <option value="Yellow">Yellow (includes Gold &amp; Straw)</option>
+        <option value="Green">Green</option>
+        <option value="Blue">Blue</option>
+        <option value="Purple">Purple (includes Lavender &amp; Violet)</option>
+        <option value="Pink">Pink</option>
+        <option value="Brown">Brown</option>
+        <option value="Neutral">Neutral (White, Black, Gray, Ecru)</option>
+      </select>
+
+      <div class="mapping-box">
+        <label class="toggle-row">
+          <span>Use Reference Brand Color</span>
+          <input type="checkbox" id="editMapToggle" onchange="toggleEditorMappingFields()" />
+        </label>
+        <div id="editMapFields" style="display:none;margin-top:10px">
+          <div class="grid-2" style="margin-bottom:0">
+            <select id="editRefBrand" style="margin-bottom:0" onchange="onEditorRefChange()">
+              <option value="DMC">DMC</option>
+              <option value="ANCHOR">Anchor</option>
+              <option value="SULKY">Sulky</option>
+              <option value="COSMO">Cosmo</option>
+            </select>
+            <input type="text" id="editRefNumber" placeholder="Ref # (e.g. 310)" style="margin-bottom:0" oninput="onEditorRefChange()" />
+          </div>
+          <div id="editRefPreview" class="subtext" style="margin-top:6px"></div>
+        </div>
+      </div>
 
       <label class="subtext" style="display:block;margin-bottom:4px">Swatch Color</label>
       <div class="row" style="margin-bottom:16px">
@@ -593,11 +730,31 @@
     </div>
   </div>
 
+  <!-- PROJECT SHOPPING LIST MODAL -->
+  <div id="shoppingListModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="shoppingListTitle" onclick="if (event.target === this) closeShoppingList()">
+    <div class="modal-card">
+      <div class="row" style="margin-bottom:8px">
+        <div>
+          <h3 id="shoppingListTitle" style="margin:0">Shopping List</h3>
+          <p id="shoppingListSubtitle" class="subtext" style="margin:2px 0 0"></p>
+        </div>
+        <button type="button" class="secondary small" onclick="closeShoppingList()">Done</button>
+      </div>
+      <div class="mapping-box" style="padding:8px 12px;margin-bottom:12px">
+        <label class="toggle-row" style="font-size:13px">
+          <span>Add checked items to Stash (+1 qty)</span>
+          <input type="checkbox" id="restockOnCheckToggle" checked onchange="setRestockOnCheck(this.checked)" />
+        </label>
+      </div>
+      <div id="shoppingListBody"></div>
+    </div>
+  </div>
+
   <main>
     <div class="container">
       <!-- VIEW 1: STASH & SEARCH -->
       <section id="view-stash" class="view active">
-        <input type="search" id="searchInput" placeholder="Search number, color, or brand..." oninput="renderStash()" />
+        <input type="search" id="searchInput" placeholder="Search number, color, family, or brand..." oninput="renderStash()" />
         <div class="stash-toolbar">
           <div id="brandFilters" class="pill-filter"></div>
           <select id="stashSort" class="stash-sort-select" aria-label="Sort stash threads" onchange="setStashSort(this.value)">
@@ -605,10 +762,12 @@
             <option value="number-desc">Number ↓</option>
             <option value="color-asc">Color A–Z</option>
             <option value="color-desc">Color Z–A</option>
+            <option value="family-asc">Family A–Z</option>
             <option value="brand-asc">Brand A–Z</option>
             <option value="qty-desc">Qty High–Low</option>
           </select>
         </div>
+        <div id="colorFamilyFilters" class="pill-filter"></div>
         <div id="stashList"></div>
       </section>
 
@@ -617,8 +776,8 @@
         <div class="card">
           <h3 style="margin-top:0">Add Single Thread</h3>
           <div class="grid-2">
-            <input type="text" id="addBrand" placeholder="Brand (e.g. DMC, Anchor)" value="DMC" list="commonBrands" oninput="autoPopulateThreadColor()" onchange="autoPopulateThreadColor()" />
-            <input type="text" id="addNumber" placeholder="Number (e.g. 310)" oninput="autoPopulateThreadColor()" onchange="autoPopulateThreadColor()" />
+            <input type="text" id="addBrand" placeholder="Brand (e.g. DMC, Anchor, Off-Brand)" value="DMC" list="commonBrands" oninput="autoPopulateThreadColor()" onchange="autoPopulateThreadColor()" />
+            <input type="text" id="addNumber" placeholder="Number (e.g. 310, 01, BLANC)" oninput="autoPopulateThreadColor()" onchange="autoPopulateThreadColor()" />
           </div>
           <datalist id="commonBrands">
             <option value="DMC"></option>
@@ -630,6 +789,26 @@
             <input type="text" id="addColor" placeholder="Color Name (auto-fills for known threads)" data-autofilled="false" oninput="this.dataset.autofilled='false'" />
             <input type="number" id="addQty" placeholder="Qty" value="1" min="0" />
           </div>
+
+          <div class="mapping-box">
+            <label class="toggle-row">
+              <span>Use a common brand&apos;s color (off-brand mapping)</span>
+              <input type="checkbox" id="addMapToggle" onchange="toggleAddMappingFields()" />
+            </label>
+            <div id="addMapFields" style="display:none;margin-top:10px">
+              <div class="grid-2" style="margin-bottom:0">
+                <select id="addRefBrand" style="margin-bottom:0" onchange="onAddRefChange()">
+                  <option value="DMC">DMC</option>
+                  <option value="ANCHOR">Anchor</option>
+                  <option value="SULKY">Sulky</option>
+                  <option value="COSMO">Cosmo</option>
+                </select>
+                <input type="text" id="addRefNumber" placeholder="Common # (e.g. 310)" style="margin-bottom:0" oninput="onAddRefChange()" />
+              </div>
+              <div id="addRefPreview" class="subtext" style="margin-top:6px"></div>
+            </div>
+          </div>
+
           <button style="width:100%" onclick="addSingleThread()">Add to Stash</button>
         </div>
 
@@ -646,6 +825,24 @@
             <option value="Sulky">Sulky</option>
             <option value="Cosmo">Cosmo</option>
           </select>
+
+          <div class="mapping-box">
+            <label class="toggle-row">
+              <span>Map imported rows to a common brand&apos;s color</span>
+              <input type="checkbox" id="bulkMapToggle" onchange="toggleBulkMappingFields()" />
+            </label>
+            <div id="bulkMapFields" style="display:none;margin-top:10px">
+              <div class="grid-2" style="margin-bottom:0">
+                <select id="bulkRefBrand" style="margin-bottom:0">
+                  <option value="DMC">DMC</option>
+                  <option value="ANCHOR">Anchor</option>
+                  <option value="SULKY">Sulky</option>
+                  <option value="COSMO">Cosmo</option>
+                </select>
+                <input type="text" id="bulkRefNumber" placeholder="Optional fixed ref # (or match row #)" style="margin-bottom:0" />
+              </div>
+            </div>
+          </div>
 
           <div class="row" style="margin-bottom:10px">
             <button type="button" class="secondary small" style="flex:1" onclick="document.getElementById('bulkImportFile').click()">Upload .CSV or .XLSX</button>
@@ -726,26 +923,95 @@
       Settings
     </button>
   </nav>
+
   <script>
-    // State Management (migrates data if user previously used threadstash_v1)
     const STORAGE_KEY = 'stitchcheck_v1';
     const LEGACY_KEY = 'threadstash_v1';
     const CONFIG_KEY = 'stitchcheck_pi_config';
     const THEME_KEY = 'stitchcheck_theme_mode';
     const SORT_KEY = 'stitchcheck_stash_sort';
+    const RESTOCK_KEY = 'stitchcheck_shop_restock';
 
-    function syncPillNavAnchor() {
+    const COLOR_FAMILIES = [
+      'Red', 'Orange', 'Yellow', 'Green', 'Blue', 'Purple', 'Pink', 'Brown', 'Neutral'
+    ];
+
+    const FAMILY_DOT_COLORS = {
+      Red: '#d70015',
+      Orange: '#ec6b1a',
+      Yellow: '#e8c224',
+      Green: '#288a42',
+      Blue: '#2c6ec4',
+      Purple: '#8a4eb8',
+      Pink: '#ec6a98',
+      Brown: '#7d4c28',
+      Neutral: '#8e8e93'
+    };
+
+    function isTextEntryFocused() {
+      const el = document.activeElement;
+      if (!el) return false;
+      if (el.tagName === 'TEXTAREA') return true;
+      if (el.tagName === 'INPUT') {
+        const type = (el.type || 'text').toLowerCase();
+        return !['checkbox', 'radio', 'color', 'file', 'button', 'submit', 'reset'].includes(type);
+      }
+      return false;
+    }
+
+    function isVirtualKeyboardOpen() {
+      if (!isTextEntryFocused()) return false;
+      if (window.visualViewport) {
+        const vv = window.visualViewport;
+        const heightShrink = window.innerHeight - vv.height;
+        if (heightShrink > 140) return true;
+      }
+      return false;
+    }
+
+    function isBottomOverscrolling() {
+      const docEl = document.documentElement;
+      const vv = window.visualViewport;
+      const viewportH = (vv && vv.height) || window.innerHeight;
+      const scrollTop = window.scrollY || docEl.scrollTop || 0;
+      const maxScroll = Math.max(0, docEl.scrollHeight - viewportH);
+      return scrollTop > maxScroll + 1;
+    }
+
+    function syncViewportAndNav() {
       const nav = document.querySelector('nav.bottom-nav');
       if (!nav) return;
 
-      nav.style.transform = 'translate3d(-50%, 0, 0)';
-      nav.style.webkitTransform = 'translate3d(-50%, 0, 0)';
+      const keyboardOpen = isVirtualKeyboardOpen();
+      const bottomBounce = isBottomOverscrolling();
+      const rawOffsetTop = (!keyboardOpen && !bottomBounce && window.visualViewport && window.visualViewport.offsetTop > 0)
+        ? window.visualViewport.offsetTop
+        : 0;
+      const vvTop = Math.max(0, rawOffsetTop);
+
+      nav.classList.toggle('keyboard-hidden', keyboardOpen);
+      nav.style.setProperty('--nav-lift', '0px');
+      nav.style.setProperty('--vv-top', `${vvTop}px`);
+      document.documentElement.style.setProperty('--vv-top', `${vvTop}px`);
     }
 
-    window.addEventListener('DOMContentLoaded', () => {
-      requestAnimationFrame(syncPillNavAnchor);
-    });
-    window.addEventListener('pageshow', syncPillNavAnchor);
+    function scheduleViewportSettle() {
+      requestAnimationFrame(syncViewportAndNav);
+      setTimeout(syncViewportAndNav, 120);
+      setTimeout(syncViewportAndNav, 320);
+      setTimeout(syncViewportAndNav, 500);
+    }
+
+    window.addEventListener('DOMContentLoaded', scheduleViewportSettle);
+    window.addEventListener('pageshow', scheduleViewportSettle);
+    window.addEventListener('focusin', scheduleViewportSettle);
+    window.addEventListener('focusout', scheduleViewportSettle);
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', scheduleViewportSettle);
+      window.visualViewport.addEventListener('scroll', () => {
+        requestAnimationFrame(syncViewportAndNav);
+      });
+    }
 
     function applyThemeMode(mode) {
       const root = document.documentElement;
@@ -793,14 +1059,20 @@
       threads: [],
       projects: []
     };
+    if (!Array.isArray(state.threads)) state.threads = [];
+    if (!Array.isArray(state.projects)) state.projects = [];
 
     let activeBrandFilter = 'ALL';
+    let activeColorFamilyFilter = 'ALL';
     let activeStashSort = localStorage.getItem(SORT_KEY) || 'number-asc';
     let editingThreadId = null;
+    let activeShoppingProjectId = null;
+    const projectFilters = {}; // projectId -> 'ALL' | 'HAVE' | 'NEEDED'
 
     function saveState() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       updateHeaderCount();
+      syncViewportAndNav();
     }
 
     function updateHeaderCount() {
@@ -814,11 +1086,182 @@
       document.querySelectorAll('nav.bottom-nav button').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
 
-      const mainEl = document.querySelector('main');
-      if (mainEl) mainEl.scrollTop = 0;
+      window.scrollTo(0, 0);
+      scheduleViewportSettle();
 
       if (tabId === 'stash') renderStash();
       if (tabId === 'projects') renderProjects();
+    }
+
+    // --- CODE NORMALIZATION & COLOR FAMILY HELPERS ---
+    function normalizeThreadCode(brand, number) {
+      const raw = String(number || '').trim().toUpperCase();
+      if (!raw) return '';
+      if (normalizeBrandKey(brand) === 'DMC' || !normalizeBrandKey(brand)) {
+        if (/^(0?[1-9]|[12][0-9]|3[0-5])$/.test(raw)) {
+          return raw.padStart(2, '0');
+        }
+      }
+      return raw;
+    }
+
+    function classifyColorFamilyFromHex(hex) {
+      if (!/^#[0-9a-fA-F]{6}$/.test(hex || '')) return null;
+      const r = parseInt(hex.slice(1, 3), 16) / 255;
+      const g = parseInt(hex.slice(3, 5), 16) / 255;
+      const b = parseInt(hex.slice(5, 7), 16) / 255;
+
+      const max = Math.max(r, g, b);
+      const min = Math.min(r, g, b);
+      const l = (max + min) / 2;
+      const d = max - min;
+
+      if (d === 0) return 'Neutral';
+      const s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+
+      if (s < 0.14 || l > 0.93 || l < 0.12) return 'Neutral';
+
+      let h = 0;
+      if (max === r) h = ((g - b) / d + (g < b ? 6 : 0)) * 60;
+      else if (max === g) h = ((b - r) / d + 2) * 60;
+      else h = ((r - g) / d + 4) * 60;
+
+      if (h >= 345 || h < 14) {
+        return (l > 0.72 && s < 0.78) ? 'Pink' : 'Red';
+      }
+      if (h >= 14 && h < 42) {
+        return l < 0.44 ? 'Brown' : 'Orange';
+      }
+      if (h >= 42 && h < 69) {
+        return l < 0.36 ? 'Brown' : 'Yellow';
+      }
+      if (h >= 69 && h < 166) return 'Green';
+      if (h >= 166 && h < 256) return 'Blue';
+      if (h >= 256 && h < 328) {
+        return (l > 0.76 && s < 0.65) ? 'Pink' : 'Purple';
+      }
+      return 'Pink';
+    }
+
+    function classifyColorFamilyFromText(text) {
+      if (!text) return null;
+      const n = String(text).toLowerCase();
+      if (/\b(lavender|lilac|violet|plum|grape|wisteria|eggplant|blueberry|fuchsia|heather)\b/.test(n)) {
+        return 'Purple';
+      }
+      if (/\b(gold|golden|straw|topaz|lemon|canary|mustard|yellow|corn)\b/.test(n)) {
+        return 'Yellow';
+      }
+      if (/\b(tangerine|apricot|pumpkin|spice|copper|orange|autumn)\b/.test(n)) {
+        return 'Orange';
+      }
+      if (/\b(rose|pink|coral|salmon|peach|melon|carnation|geranium|cranberry|raspberry|mauve|blossom|shrimp)\b/.test(n)) {
+        return 'Pink';
+      }
+      if (/\b(garnet|crimson|scarlet|alizarin|red)\b/.test(n)) {
+        return 'Red';
+      }
+      if (/\b(green|pistachio|emerald|avocado|moss|forest|hunter|parrot|jade|aquamarine|celadon|fern|olive|khaki|chartreuse|nile)\b/.test(n)) {
+        return 'Green';
+      }
+      if (/\b(blue|navy|royal|delft|cornflower|wedgwood|turquoise|sky|peacock|electric|antique blue)\b/.test(n)) {
+        return 'Blue';
+      }
+      if (/\b(brown|mahogany|cocoa|mocha|tan|sand|taupe|hazelnut|driftwood|beaver|terra cotta|tawny|woodwork|savannah)\b/.test(n)) {
+        return 'Brown';
+      }
+      if (/\b(white|blanc|b5200|ecru|cream|black|gray|grey|pewter|tin|ash)\b/.test(n)) {
+        return 'Neutral';
+      }
+      return null;
+    }
+
+    function getThreadColorFamily(thread) {
+      if (!thread) return 'Neutral';
+      if (thread.colorFamily && COLOR_FAMILIES.includes(thread.colorFamily)) {
+        return thread.colorFamily;
+      }
+      const ref = getMappedReference(thread);
+      if (ref && ref.family && COLOR_FAMILIES.includes(ref.family)) {
+        return ref.family;
+      }
+      const directMatch = lookupThreadCatalog(thread.brand, thread.number);
+      if (directMatch && directMatch.family && COLOR_FAMILIES.includes(directMatch.family)) {
+        return directMatch.family;
+      }
+      const swatch = getThreadSwatchHex(thread);
+      const byHex = classifyColorFamilyFromHex(swatch);
+      if (byHex) return byHex;
+      const byText = classifyColorFamilyFromText(thread.color || (ref && ref.name) || '');
+      return byText || 'Neutral';
+    }
+
+    // --- OFF-BRAND / COMMON BRAND COLOR MAPPING HELPERS ---
+    function getMappedReference(item) {
+      if (!item || !item.mappedBrand || !item.mappedNumber) return null;
+      return lookupThreadCatalog(item.mappedBrand, item.mappedNumber);
+    }
+
+    function shouldShowEquivalentTag(thread) {
+      if (!thread || !thread.mappedBrand || !thread.mappedNumber) return false;
+      if (normalizeBrandKey(thread.brand)) return false;
+      return true;
+    }
+
+    function toggleAddMappingFields() {
+      const checked = document.getElementById('addMapToggle').checked;
+      document.getElementById('addMapFields').style.display = checked ? 'block' : 'none';
+      if (checked) onAddRefChange();
+    }
+
+    function onAddRefChange() {
+      const refBrand = document.getElementById('addRefBrand').value;
+      const refNum = document.getElementById('addRefNumber').value;
+      const previewEl = document.getElementById('addRefPreview');
+      const colorInput = document.getElementById('addColor');
+      const match = lookupThreadCatalog(refBrand, refNum);
+
+      if (match) {
+        previewEl.innerHTML = `<span class="color-dot" style="background:${match.hex}"></span>Using <strong>${match.brandKey} ${match.number}</strong> · ${escapeHtml(match.name)} (${match.family})`;
+        if (!colorInput.value.trim() || colorInput.dataset.autofilled === 'true') {
+          colorInput.value = match.name;
+          colorInput.dataset.autofilled = 'true';
+        }
+      } else if (refNum.trim()) {
+        previewEl.textContent = `No exact catalog match yet for ${refBrand} ${refNum.trim().toUpperCase()} — custom code will still save.`;
+      } else {
+        previewEl.textContent = 'Pick a reference brand and number to inherit its color & family.';
+      }
+    }
+
+    function toggleBulkMappingFields() {
+      const checked = document.getElementById('bulkMapToggle').checked;
+      document.getElementById('bulkMapFields').style.display = checked ? 'block' : 'none';
+    }
+
+    function toggleEditorMappingFields() {
+      const checked = document.getElementById('editMapToggle').checked;
+      document.getElementById('editMapFields').style.display = checked ? 'block' : 'none';
+      if (checked) onEditorRefChange();
+    }
+
+    function onEditorRefChange() {
+      const refBrand = document.getElementById('editRefBrand').value;
+      const refNum = document.getElementById('editRefNumber').value;
+      const previewEl = document.getElementById('editRefPreview');
+      const match = lookupThreadCatalog(refBrand, refNum);
+
+      if (match) {
+        previewEl.innerHTML = `<span class="color-dot" style="background:${match.hex}"></span>Matches <strong>${match.brandKey} ${match.number}</strong> · ${escapeHtml(match.name)} (${match.family})`;
+        document.getElementById('editSwatchPicker').value = normalizeHexForPicker(match.hex);
+        document.getElementById('editSwatchHex').value = match.hex.toLowerCase();
+        const colorEl = document.getElementById('editThreadColor');
+        if (!colorEl.value.trim()) colorEl.value = match.name;
+      } else if (refNum.trim()) {
+        previewEl.textContent = `Custom reference ${refBrand} ${refNum.trim().toUpperCase()}`;
+      } else {
+        previewEl.textContent = '';
+      }
     }
 
     // --- STASH & BULK IMPORT FUNCTIONS ---
@@ -886,14 +1329,23 @@
         showToast(`Could not read file: ${err.message}`, 'error');
       } finally {
         event.target.value = '';
+        scheduleViewportSettle();
       }
     }
 
     function addSingleThread() {
       const brand = document.getElementById('addBrand').value.trim() || 'DMC';
-      const number = document.getElementById('addNumber').value.trim();
+      const rawNumber = document.getElementById('addNumber').value.trim();
+      const number = normalizeThreadCode(brand, rawNumber);
+      const mapEnabled = document.getElementById('addMapToggle').checked;
+      const mappedBrand = mapEnabled ? document.getElementById('addRefBrand').value : '';
+      const mappedNumber = mapEnabled ? normalizeThreadCode(mappedBrand, document.getElementById('addRefNumber').value.trim()) : '';
+
+      const refMatch = mappedBrand && mappedNumber ? lookupThreadCatalog(mappedBrand, mappedNumber) : null;
       const catalogMatch = lookupThreadCatalog(brand, number);
-      const color = document.getElementById('addColor').value.trim() || (catalogMatch ? catalogMatch.name : '');
+      const chosenCatalog = refMatch || catalogMatch;
+
+      const color = document.getElementById('addColor').value.trim() || (chosenCatalog ? chosenCatalog.name : '');
       const qty = parseInt(document.getElementById('addQty').value, 10) || 1;
 
       if (!number) {
@@ -901,8 +1353,16 @@
         return;
       }
 
-      upsertThread(brand, number, color, qty);
+      upsertThread(brand, number, color, qty, {
+        mappedBrand: mappedBrand || undefined,
+        mappedNumber: mappedNumber || undefined,
+        swatchHex: chosenCatalog ? chosenCatalog.hex.toLowerCase() : undefined,
+        colorFamily: chosenCatalog ? chosenCatalog.family : undefined
+      });
+
       document.getElementById('addNumber').value = '';
+      document.getElementById('addRefNumber').value = '';
+      document.getElementById('addRefPreview').textContent = '';
       const colorEl = document.getElementById('addColor');
       colorEl.value = '';
       colorEl.dataset.autofilled = 'false';
@@ -910,23 +1370,42 @@
       showToast(`Added ${brand} ${number}${color ? ' · ' + color : ''}`);
     }
 
-    function upsertThread(brand, number, color, qtyToAdd) {
+    function upsertThread(brand, number, color, qtyToAdd, extra = {}) {
+      const normNum = normalizeThreadCode(brand, number) || number.trim();
       const existing = state.threads.find(
-        t => t.brand.toLowerCase() === brand.toLowerCase() && t.number.toLowerCase() === number.toLowerCase()
+        t => t.brand.toLowerCase() === brand.toLowerCase() &&
+             normalizeThreadCode(t.brand, t.number).toLowerCase() === normNum.toLowerCase()
       );
       if (existing) {
         existing.qty += qtyToAdd;
         if (color && (!existing.color || existing.color === 'Unnamed')) {
           existing.color = color;
         }
+        if (extra.mappedBrand && extra.mappedNumber) {
+          existing.mappedBrand = extra.mappedBrand;
+          existing.mappedNumber = extra.mappedNumber;
+        }
+        if (extra.swatchHex && !existing.swatchHex) {
+          existing.swatchHex = extra.swatchHex;
+        }
+        if (extra.colorFamily && !existing.colorFamily) {
+          existing.colorFamily = extra.colorFamily;
+        }
       } else {
-        state.threads.push({
+        const entry = {
           id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
           brand,
-          number,
+          number: normNum,
           color: color || '',
           qty: qtyToAdd
-        });
+        };
+        if (extra.mappedBrand && extra.mappedNumber) {
+          entry.mappedBrand = extra.mappedBrand;
+          entry.mappedNumber = extra.mappedNumber;
+        }
+        if (extra.swatchHex) entry.swatchHex = extra.swatchHex;
+        if (extra.colorFamily) entry.colorFamily = extra.colorFamily;
+        state.threads.push(entry);
       }
     }
 
@@ -941,7 +1420,7 @@
     function resolveBulkEntry(parts, fallbackBrand) {
       if (parts.length >= 3) {
         const brand = parts[0] || fallbackBrand;
-        const number = parts[1];
+        const number = normalizeThreadCode(brand, parts[1]);
         let color = parts.slice(2).join(' ').trim();
         if (!color && normalizeBrandKey(brand)) {
           const match = lookupThreadCatalog(brand, number);
@@ -954,19 +1433,18 @@
         const firstAsKnownBrand = normalizeBrandKey(parts[0]);
         if (firstAsKnownBrand) {
           const brand = parts[0];
-          const number = parts[1];
+          const number = normalizeThreadCode(brand, parts[1]);
           const match = lookupThreadCatalog(brand, number);
           return { brand, number, color: match ? match.name : '' };
         }
 
-        // If first column is a non-numeric brand name and second column is a thread code (e.g. "Weeks Dye Works, 1104")
         if (!looksLikeThreadCode(parts[0]) && looksLikeThreadCode(parts[1])) {
-          return { brand: parts[0], number: parts[1], color: '' };
+          const number = normalizeThreadCode(parts[0], parts[1]);
+          return { brand: parts[0], number, color: '' };
         }
 
-        // Otherwise treat as (Number, Color) using the selected fallback brand
         const brand = fallbackBrand;
-        const number = parts[0];
+        const number = normalizeThreadCode(brand, parts[0]);
         let color = parts[1];
         if (!color && normalizeBrandKey(brand)) {
           const match = lookupThreadCatalog(brand, number);
@@ -976,7 +1454,7 @@
       }
 
       const brand = fallbackBrand;
-      const number = parts[0];
+      const number = normalizeThreadCode(brand, parts[0]);
       const match = normalizeBrandKey(brand) ? lookupThreadCatalog(brand, number) : null;
       return { brand, number, color: match ? match.name : '' };
     }
@@ -987,6 +1465,9 @@
 
       const defaultBrandSelect = document.getElementById('bulkDefaultBrand');
       const fallbackBrand = (defaultBrandSelect && defaultBrandSelect.value) || 'DMC';
+      const mapEnabled = document.getElementById('bulkMapToggle').checked;
+      const mapBrand = mapEnabled ? document.getElementById('bulkRefBrand').value : '';
+      const fixedMapNum = mapEnabled ? normalizeThreadCode(mapBrand, document.getElementById('bulkRefNumber').value.trim()) : '';
 
       const lines = raw.split(/\r?\n/);
       let count = 0;
@@ -1003,9 +1484,19 @@
         if (nonEmpty.length === 0) return;
 
         const entry = resolveBulkEntry(parts, fallbackBrand);
-        if (!entry.number) return;
+        const normNum = normalizeThreadCode(entry.brand, entry.number);
+        if (!normNum) return;
 
-        upsertThread(entry.brand, entry.number, entry.color, 1);
+        const targetRefNum = fixedMapNum || normalizeThreadCode(mapBrand, normNum);
+        const refMatch = mapEnabled && mapBrand && targetRefNum ? lookupThreadCatalog(mapBrand, targetRefNum) : null;
+        const colorToSave = entry.color || (refMatch ? refMatch.name : '');
+
+        upsertThread(entry.brand, normNum, colorToSave, 1, {
+          mappedBrand: refMatch ? refMatch.brandKey : undefined,
+          mappedNumber: refMatch ? refMatch.number : undefined,
+          swatchHex: refMatch ? refMatch.hex.toLowerCase() : undefined,
+          colorFamily: refMatch ? refMatch.family : undefined
+        });
         count++;
       });
 
@@ -1018,19 +1509,10 @@
       showToast(`Imported ${count} thread${count === 1 ? '' : 's'}${headerNote}`);
     }
 
-    function adjustQty(id, delta) {
-      const thread = state.threads.find(t => t.id === id);
-      if (!thread) return;
-      thread.qty += delta;
-      if (thread.qty <= 0) {
-        if (confirm(`Remove ${thread.brand} ${thread.number} from stash?`)) {
-          state.threads = state.threads.filter(t => t.id !== id);
-        } else {
-          thread.qty = 1;
-        }
-      }
-      saveState();
-      renderStash();
+    function stepEditorQty(delta) {
+      const qtyInput = document.getElementById('editThreadQty');
+      const current = parseInt(qtyInput.value, 10) || 0;
+      qtyInput.value = Math.max(0, current + delta);
     }
 
     function normalizeHexForPicker(colorValue) {
@@ -1056,12 +1538,21 @@
       editingThreadId = id;
 
       document.getElementById('editThreadSubtitle').textContent = `${thread.brand} ${thread.number}`;
+      document.getElementById('editThreadQty').value = Number.isFinite(thread.qty) ? thread.qty : 1;
       document.getElementById('editThreadColor').value = thread.color && thread.color !== 'Unnamed' ? thread.color : '';
+      document.getElementById('editColorFamily').value = thread.colorFamily && COLOR_FAMILIES.includes(thread.colorFamily) ? thread.colorFamily : 'Auto';
+
+      const hasMap = Boolean(thread.mappedBrand && thread.mappedNumber);
+      document.getElementById('editMapToggle').checked = hasMap;
+      document.getElementById('editMapFields').style.display = hasMap ? 'block' : 'none';
+      document.getElementById('editRefBrand').value = hasMap ? normalizeBrandKey(thread.mappedBrand) || 'DMC' : 'DMC';
+      document.getElementById('editRefNumber').value = hasMap ? thread.mappedNumber : '';
 
       const currentSwatch = getThreadSwatchHex(thread);
       const hexVal = normalizeHexForPicker(currentSwatch);
       document.getElementById('editSwatchPicker').value = hexVal;
       document.getElementById('editSwatchHex').value = thread.swatchHex || hexVal;
+      if (hasMap) onEditorRefChange();
 
       document.getElementById('editThreadModal').classList.add('open');
       setTimeout(() => document.getElementById('editThreadColor').focus(), 40);
@@ -1070,6 +1561,7 @@
     function closeThreadEditor() {
       editingThreadId = null;
       document.getElementById('editThreadModal').classList.remove('open');
+      scheduleViewportSettle();
     }
 
     function syncHexFromPicker() {
@@ -1090,14 +1582,48 @@
       const thread = state.threads.find(t => t.id === editingThreadId);
       if (!thread) return;
 
+      const parsedQty = parseInt(document.getElementById('editThreadQty').value, 10);
+      const nextQty = Number.isNaN(parsedQty) ? thread.qty : Math.max(0, parsedQty);
+
+      if (nextQty <= 0) {
+        if (!confirm(`Remove ${thread.brand} ${thread.number} from stash because quantity is 0?`)) {
+          return;
+        }
+        state.threads = state.threads.filter(t => t.id !== editingThreadId);
+        saveState();
+        closeThreadEditor();
+        renderStash();
+        showToast(`Removed ${thread.brand} ${thread.number}`);
+        return;
+      }
+
       const colorName = document.getElementById('editThreadColor').value.trim();
       const rawHex = document.getElementById('editSwatchHex').value.trim();
+      const chosenFamily = document.getElementById('editColorFamily').value;
+      const mapEnabled = document.getElementById('editMapToggle').checked;
+      const refBrand = mapEnabled ? document.getElementById('editRefBrand').value : '';
+      const refNum = mapEnabled ? normalizeThreadCode(refBrand, document.getElementById('editRefNumber').value.trim()) : '';
 
+      thread.qty = nextQty;
       thread.color = colorName;
       if (/^#[0-9a-fA-F]{6}$/.test(rawHex)) {
         thread.swatchHex = rawHex.toLowerCase();
       } else if (!rawHex) {
         delete thread.swatchHex;
+      }
+
+      if (mapEnabled && refBrand && refNum) {
+        thread.mappedBrand = refBrand;
+        thread.mappedNumber = refNum;
+      } else {
+        delete thread.mappedBrand;
+        delete thread.mappedNumber;
+      }
+
+      if (chosenFamily && chosenFamily !== 'Auto') {
+        thread.colorFamily = chosenFamily;
+      } else {
+        delete thread.colorFamily;
       }
 
       saveState();
@@ -1113,10 +1639,13 @@
     }
 
     function compareStashThreads(a, b, sortMode) {
-      const numCmp = a.number.localeCompare(b.number, undefined, { numeric: true, sensitivity: 'base' });
+      const numA = normalizeThreadCode(a.brand, a.number);
+      const numB = normalizeThreadCode(b.brand, b.number);
+      const numCmp = numA.localeCompare(numB, undefined, { numeric: true, sensitivity: 'base' });
       const colA = (a.color && a.color !== 'Unnamed' ? a.color : '').trim();
       const colB = (b.color && b.color !== 'Unnamed' ? b.color : '').trim();
       const colCmp = colA.localeCompare(colB, undefined, { sensitivity: 'base' });
+      const famCmp = getThreadColorFamily(a).localeCompare(getThreadColorFamily(b), undefined, { sensitivity: 'base' });
       const brandCmp = (a.brand || '').localeCompare(b.brand || '', undefined, { sensitivity: 'base' });
 
       switch (sortMode) {
@@ -1130,6 +1659,8 @@
           if (!colA && colB) return 1;
           if (colA && !colB) return -1;
           return -colCmp || numCmp;
+        case 'family-asc':
+          return famCmp || numCmp;
         case 'brand-asc':
           return brandCmp || numCmp;
         case 'qty-desc':
@@ -1149,13 +1680,36 @@
       `).join('');
     }
 
+    function renderColorFamilyPills() {
+      const presentFamilies = new Set(state.threads.map(t => getThreadColorFamily(t)));
+      const families = ['ALL', ...COLOR_FAMILIES.filter(f => presentFamilies.has(f))];
+      if (!families.includes(activeColorFamilyFilter)) activeColorFamilyFilter = 'ALL';
+
+      const container = document.getElementById('colorFamilyFilters');
+      container.innerHTML = families.map(f => {
+        const dot = f !== 'ALL'
+          ? `<span class="color-dot" style="background:${FAMILY_DOT_COLORS[f] || '#8e8e93'}"></span>`
+          : '';
+        const label = f === 'ALL' ? 'All Colors' : f;
+        return `
+          <button class="${activeColorFamilyFilter === f ? 'active' : ''}" onclick="setColorFamilyFilter('${escapeHtml(f)}')">${dot}${escapeHtml(label)}</button>
+        `;
+      }).join('');
+    }
+
     function setBrandFilter(brand) {
       activeBrandFilter = brand;
       renderStash();
     }
 
+    function setColorFamilyFilter(family) {
+      activeColorFamilyFilter = family;
+      renderStash();
+    }
+
     function renderStash() {
       renderBrandPills();
+      renderColorFamilyPills();
       const sortEl = document.getElementById('stashSort');
       if (sortEl) sortEl.value = activeStashSort;
 
@@ -1164,41 +1718,55 @@
 
       const filtered = state.threads
         .filter(t => activeBrandFilter === 'ALL' || t.brand === activeBrandFilter)
-        .filter(t =>
-          t.number.toLowerCase().includes(query) ||
-          (t.color || '').toLowerCase().includes(query) ||
-          t.brand.toLowerCase().includes(query)
-        )
+        .filter(t => activeColorFamilyFilter === 'ALL' || getThreadColorFamily(t) === activeColorFamilyFilter)
+        .filter(t => {
+          const fam = getThreadColorFamily(t).toLowerCase();
+          const mapText = shouldShowEquivalentTag(t) ? `${t.mappedBrand} ${t.mappedNumber}`.toLowerCase() : '';
+          return (
+            t.number.toLowerCase().includes(query) ||
+            (t.color || '').toLowerCase().includes(query) ||
+            t.brand.toLowerCase().includes(query) ||
+            fam.includes(query) ||
+            mapText.includes(query)
+          );
+        })
         .sort((a, b) => compareStashThreads(a, b, activeStashSort));
 
       if (filtered.length === 0) {
-        list.innerHTML = `<p class="subtext" style="text-align:center;margin-top:32px">No threads in your stash yet.</p>`;
+        list.innerHTML = `<p class="subtext" style="text-align:center;margin-top:32px">No matching threads in your stash.</p>`;
+        syncViewportAndNav();
         return;
       }
 
       list.innerHTML = filtered.map(t => {
         const descText = t.color && t.color !== 'Unnamed' ? escapeHtml(t.color) : 'No color description';
+        const fam = getThreadColorFamily(t);
+        const mapBadge = shouldShowEquivalentTag(t)
+          ? `<span class="badge alias">≈ ${escapeHtml(t.mappedBrand)} ${escapeHtml(t.mappedNumber)}</span>`
+          : '';
         return `
           <div class="card row">
             <div class="thread-meta">
               <div class="swatch" style="background:${getThreadSwatchHex(t)}"></div>
               <div>
-                <strong>${escapeHtml(t.brand)} ${escapeHtml(t.number)}</strong>
-                <div class="subtext">${descText}</div>
+                <strong>${escapeHtml(t.brand)} ${escapeHtml(t.number)}</strong>${mapBadge}
+                <div class="subtext">${descText} · ${escapeHtml(fam)} · Qty: ${t.qty}</div>
               </div>
             </div>
             <div class="row" style="gap:6px;flex-shrink:0">
-              <button class="secondary small" onclick="openThreadEditor('${t.id}')">Edit</button>
-              <button class="secondary small" onclick="adjustQty('${t.id}', -1)">−</button>
-              <span style="min-width:20px;text-align:center;font-weight:600">${t.qty}</span>
-              <button class="secondary small" onclick="adjustQty('${t.id}', 1)">+</button>
+              <button type="button" class="secondary icon-btn" onclick="openThreadEditor('${t.id}')" aria-label="Edit ${escapeHtml(t.brand)} ${escapeHtml(t.number)}" title="Edit">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zm17.71-10.21a.996.996 0 0 0 0-1.41l-2.34-2.34a.996.996 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                </svg>
+              </button>
             </div>
           </div>
         `;
       }).join('');
+      syncViewportAndNav();
     }
 
-    // --- PROJECT FUNCTIONS ---
+    // --- PROJECT FUNCTIONS, HAVE/NEEDED FILTERS & SHOPPING LIST ---
     function createProject() {
       const input = document.getElementById('newProjectName');
       const name = input.value.trim();
@@ -1209,20 +1777,60 @@
         requirements: []
       });
       input.value = '';
+      if (document.activeElement && document.activeElement.blur) {
+        document.activeElement.blur();
+      }
       saveState();
       renderProjects();
+      scheduleViewportSettle();
+    }
+
+    function autoPopulateProjectThreadColor(projectId) {
+      const brandEl = document.getElementById(`pBrand_${projectId}`);
+      const numEl = document.getElementById(`pNum_${projectId}`);
+      const colorEl = document.getElementById(`pCol_${projectId}`);
+      if (!brandEl || !numEl || !colorEl) return;
+
+      const match = lookupThreadCatalog(brandEl.value, numEl.value);
+      if (match) {
+        if (!colorEl.value.trim() || colorEl.dataset.autofilled === 'true') {
+          colorEl.value = match.name;
+          colorEl.dataset.autofilled = 'true';
+        }
+      } else if (colorEl.dataset.autofilled === 'true') {
+        colorEl.value = '';
+        colorEl.dataset.autofilled = 'false';
+      }
     }
 
     function addReqToProject(projectId) {
-      const brand = document.getElementById(`pBrand_${projectId}`).value.trim() || 'DMC';
-      const number = document.getElementById(`pNum_${projectId}`).value.trim();
-      const color = document.getElementById(`pCol_${projectId}`).value.trim();
+      const brandEl = document.getElementById(`pBrand_${projectId}`);
+      const numEl = document.getElementById(`pNum_${projectId}`);
+      const colEl = document.getElementById(`pCol_${projectId}`);
+      if (!brandEl || !numEl || !colEl) return;
+
+      const brand = brandEl.value.trim() || 'DMC';
+      const rawNum = numEl.value.trim();
+      const number = normalizeThreadCode(brand, rawNum);
       if (!number) return;
 
+      const match = lookupThreadCatalog(brand, number);
+      const color = colEl.value.trim() || (match ? match.name : '');
+
       const proj = state.projects.find(p => p.id === projectId);
-      proj.requirements.push({ brand, number, color });
+      if (!proj) return;
+      proj.requirements.push({ brand, number, color, bought: false });
+
+      numEl.value = '';
+      colEl.value = '';
+      colEl.dataset.autofilled = 'false';
+      if (document.activeElement && document.activeElement.blur) {
+        document.activeElement.blur();
+      }
+
       saveState();
       renderProjects();
+      scheduleViewportSettle();
     }
 
     function removeReq(projectId, idx) {
@@ -1230,44 +1838,170 @@
       proj.requirements.splice(idx, 1);
       saveState();
       renderProjects();
+      if (activeShoppingProjectId === projectId) renderShoppingListModal();
     }
 
     function deleteProject(projectId) {
       if (!confirm('Delete this project?')) return;
       state.projects = state.projects.filter(p => p.id !== projectId);
+      delete projectFilters[projectId];
+      if (activeShoppingProjectId === projectId) closeShoppingList();
       saveState();
       renderProjects();
     }
 
+    function setProjectFilter(projectId, mode) {
+      projectFilters[projectId] = mode;
+      renderProjects();
+    }
+
     function checkStashOwnership(brand, number) {
-      const match = state.threads.find(
-        t => t.brand.toLowerCase() === brand.toLowerCase() && t.number.toLowerCase() === number.toLowerCase() && t.qty > 0
+      const normReqNum = normalizeThreadCode(brand, number).toLowerCase();
+      const targetBrandKey = normalizeBrandKey(brand);
+
+      const directMatch = state.threads.find(
+        t => t.brand.toLowerCase() === brand.toLowerCase() &&
+             normalizeThreadCode(t.brand, t.number).toLowerCase() === normReqNum &&
+             t.qty > 0
       );
-      return match || null;
+      if (directMatch) return { thread: directMatch, mapped: false };
+
+      const mappedMatch = state.threads.find(t => {
+        if (!t.mappedBrand || !t.mappedNumber || t.qty <= 0) return false;
+        const mBrandKey = normalizeBrandKey(t.mappedBrand);
+        const sameBrand = (targetBrandKey && mBrandKey && targetBrandKey === mBrandKey) ||
+                        (t.mappedBrand.toLowerCase() === brand.toLowerCase());
+        const sameNum = normalizeThreadCode(t.mappedBrand, t.mappedNumber).toLowerCase() === normReqNum;
+        return sameBrand && sameNum;
+      });
+      if (mappedMatch) return { thread: mappedMatch, mapped: true };
+
+      return null;
+    }
+
+    function shouldRestockOnCheck() {
+      const saved = localStorage.getItem(RESTOCK_KEY);
+      return saved === null ? true : saved === 'true';
+    }
+
+    function setRestockOnCheck(enabled) {
+      localStorage.setItem(RESTOCK_KEY, String(Boolean(enabled)));
+    }
+
+    function openShoppingList(projectId) {
+      activeShoppingProjectId = projectId;
+      document.getElementById('restockOnCheckToggle').checked = shouldRestockOnCheck();
+      renderShoppingListModal();
+      document.getElementById('shoppingListModal').classList.add('open');
+    }
+
+    function closeShoppingList() {
+      activeShoppingProjectId = null;
+      document.getElementById('shoppingListModal').classList.remove('open');
+      scheduleViewportSettle();
+    }
+
+    function toggleShoppingItemChecked(projectId, reqIdx, checked) {
+      const proj = state.projects.find(p => p.id === projectId);
+      if (!proj || !proj.requirements[reqIdx]) return;
+      const req = proj.requirements[reqIdx];
+      const wasChecked = Boolean(req.bought);
+      req.bought = Boolean(checked);
+
+      if (shouldRestockOnCheck() && !wasChecked && req.bought) {
+        const match = lookupThreadCatalog(req.brand, req.number);
+        upsertThread(req.brand, req.number, req.color || (match ? match.name : ''), 1, {
+          swatchHex: match ? match.hex.toLowerCase() : undefined,
+          colorFamily: match ? match.family : undefined
+        });
+        showToast(`Added ${req.brand} ${req.number} to stash`);
+      }
+
+      saveState();
+      renderProjects();
+      renderShoppingListModal();
+    }
+
+    function renderShoppingListModal() {
+      const proj = state.projects.find(p => p.id === activeShoppingProjectId);
+      if (!proj) return;
+
+      document.getElementById('shoppingListTitle').textContent = `${proj.name} — Shopping List`;
+      const neededItems = proj.requirements
+        .map((req, idx) => ({ req, idx, owned: checkStashOwnership(req.brand, req.number) }))
+        .filter(item => !item.owned || item.req.bought);
+
+      const remainingCount = neededItems.filter(i => !i.req.bought).length;
+      document.getElementById('shoppingListSubtitle').textContent =
+        `${remainingCount} remaining to buy · ${neededItems.filter(i => i.req.bought).length} checked off`;
+
+      const body = document.getElementById('shoppingListBody');
+      if (neededItems.length === 0) {
+        body.innerHTML = `<p class="subtext" style="text-align:center;padding:16px 0">You already have every thread for this project in your stash!</p>`;
+        return;
+      }
+
+      body.innerHTML = neededItems.map(({ req, idx }) => {
+        const match = lookupThreadCatalog(req.brand, req.number);
+        const labelColor = req.color || (match ? match.name : '');
+        const checkedAttr = req.bought ? 'checked' : '';
+        return `
+          <div class="shopping-item row ${req.bought ? 'checked' : ''}">
+            <label class="row" style="gap:10px;cursor:pointer;flex:1;min-width:0">
+              <input type="checkbox" ${checkedAttr} onchange="toggleShoppingItemChecked('${proj.id}', ${idx}, this.checked)" />
+              <span class="swatch" style="width:26px;height:26px;background:${match ? match.hex : 'var(--card-elevated)'}"></span>
+              <div style="min-width:0">
+                <strong>${escapeHtml(req.brand)} ${escapeHtml(req.number)}</strong>
+                <div class="subtext shop-label">${labelColor ? escapeHtml(labelColor) : 'Needed thread'}</div>
+              </div>
+            </label>
+            <span class="badge ${req.bought ? 'owned' : 'missing'}">${req.bought ? 'Picked up' : 'Need 1'}</span>
+          </div>
+        `;
+      }).join('');
     }
 
     function renderProjects() {
       const container = document.getElementById('projectsList');
       if (state.projects.length === 0) {
         container.innerHTML = `<p class="subtext" style="text-align:center;margin-top:32px">No projects yet. Create one above!</p>`;
+        syncViewportAndNav();
         return;
       }
 
       container.innerHTML = state.projects.map(p => {
-        let ownedCount = 0;
-        const rowsHtml = p.requirements.map((req, idx) => {
-          const owned = checkStashOwnership(req.brand, req.number);
-          if (owned) ownedCount++;
-          const displayColor = req.color || (owned ? owned.color : '');
+        const currentFilter = projectFilters[p.id] || 'ALL';
+        const enriched = p.requirements.map((req, idx) => ({
+          req,
+          idx,
+          ownership: checkStashOwnership(req.brand, req.number)
+        }));
+
+        const ownedCount = enriched.filter(e => Boolean(e.ownership)).length;
+        const neededCount = enriched.length - ownedCount;
+
+        const visibleRows = enriched.filter(({ ownership }) => {
+          if (currentFilter === 'HAVE') return Boolean(ownership);
+          if (currentFilter === 'NEEDED') return !ownership;
+          return true;
+        });
+
+        const rowsHtml = visibleRows.map(({ req, idx, ownership }) => {
+          const ownedThread = ownership ? ownership.thread : null;
+          const displayColor = req.color || (ownedThread ? ownedThread.color : '');
+          const mappedNote = ownership && ownership.mapped
+            ? `<span class="badge alias">via ${escapeHtml(ownedThread.brand)} ${escapeHtml(ownedThread.number)}</span>`
+            : '';
+
           return `
             <div class="row" style="padding:8px 0; border-top:0.5px solid var(--border)">
-              <div>
-                <strong>${escapeHtml(req.brand)} ${escapeHtml(req.number)}</strong>
+              <div style="min-width:0">
+                <strong>${escapeHtml(req.brand)} ${escapeHtml(req.number)}</strong>${mappedNote}
                 <span class="subtext">${displayColor ? '· ' + escapeHtml(displayColor) : ''}</span>
               </div>
-              <div class="row" style="gap:6px">
-                ${owned
-                  ? `<span class="badge owned">In Stash (${owned.qty})</span>`
+              <div class="row" style="gap:6px;flex-shrink:0">
+                ${ownedThread
+                  ? `<span class="badge owned">In Stash (${ownedThread.qty})</span>`
                   : `<span class="badge missing">Need</span>`}
                 <button class="danger" onclick="removeReq('${p.id}', ${idx})">✕</button>
               </div>
@@ -1280,24 +2014,34 @@
             <div class="row" style="margin-bottom:10px">
               <div>
                 <h3 style="margin:0">${escapeHtml(p.name)}</h3>
-                <span class="subtext">${ownedCount} of ${p.requirements.length} threads in stash</span>
+                <span class="subtext">${ownedCount} of ${p.requirements.length} in stash · ${neededCount} needed</span>
               </div>
-              <button class="danger" onclick="deleteProject('${p.id}')">Delete</button>
+              <div class="row" style="gap:4px">
+                <button type="button" class="secondary small" onclick="openShoppingList('${p.id}')">Shop (${neededCount})</button>
+                <button class="danger" onclick="deleteProject('${p.id}')">Delete</button>
+              </div>
             </div>
 
-            ${rowsHtml}
+            <div class="pill-filter" style="margin-bottom:6px;padding-bottom:4px">
+              <button type="button" class="${currentFilter === 'ALL' ? 'active' : ''}" onclick="setProjectFilter('${p.id}', 'ALL')">All (${enriched.length})</button>
+              <button type="button" class="${currentFilter === 'HAVE' ? 'active' : ''}" onclick="setProjectFilter('${p.id}', 'HAVE')">Have (${ownedCount})</button>
+              <button type="button" class="${currentFilter === 'NEEDED' ? 'active' : ''}" onclick="setProjectFilter('${p.id}', 'NEEDED')">Needed (${neededCount})</button>
+            </div>
+
+            ${rowsHtml || `<p class="subtext" style="margin:8px 0">No ${currentFilter.toLowerCase()} threads in this project.</p>`}
 
             <div class="grid-2" style="margin-top:12px">
-              <input type="text" id="pBrand_${p.id}" placeholder="Brand" value="DMC" style="margin-bottom:0" />
-              <input type="text" id="pNum_${p.id}" placeholder="Thread #" style="margin-bottom:0" />
+              <input type="text" id="pBrand_${p.id}" placeholder="Brand" value="DMC" style="margin-bottom:0" oninput="autoPopulateProjectThreadColor('${p.id}')" onchange="autoPopulateProjectThreadColor('${p.id}')" />
+              <input type="text" id="pNum_${p.id}" placeholder="Thread #" style="margin-bottom:0" oninput="autoPopulateProjectThreadColor('${p.id}')" onchange="autoPopulateProjectThreadColor('${p.id}')" />
             </div>
             <div class="row" style="margin-top:8px">
-              <input type="text" id="pCol_${p.id}" placeholder="Color (optional)" style="margin-bottom:0" />
+              <input type="text" id="pCol_${p.id}" placeholder="Color (auto-fills for known threads)" data-autofilled="false" style="margin-bottom:0" oninput="this.dataset.autofilled='false'" />
               <button class="small" onclick="addReqToProject('${p.id}')">+ Add</button>
             </div>
           </div>
         `;
       }).join('');
+      syncViewportAndNav();
     }
 
     // --- SYNC & BACKUP ---
@@ -1385,501 +2129,591 @@
       reader.readAsText(file);
     }
 
-    // --- THREAD COLOR CATALOG (EXACT HEX + COLOR NAMES) ---
+    // --- THREAD COLOR CATALOG (COMPLETE DMC + LINES + COLOR FAMILIES) ---
     const THREAD_CATALOG = {
       DMC: {
-        'B5200': { name: 'Snow White', hex: '#FFFFFF' },
-        'BLANC': { name: 'White', hex: '#FCFCFC' },
-        'ECRU': { name: 'Ecru', hex: '#F0EAD6' },
-        '154': { name: 'Very Dark Grape', hex: '#572236' },
-        '155': { name: 'Medium Dark Blue Violet', hex: '#9896C4' },
-        '156': { name: 'Medium Light Blue Violet', hex: '#A3A8CE' },
-        '157': { name: 'Very Light Cornflower Blue', hex: '#BBC3DE' },
-        '158': { name: 'Medium Very Dark Cornflower Blue', hex: '#4C5A7E' },
-        '159': { name: 'Light Gray Blue', hex: '#C6CEDB' },
-        '160': { name: 'Medium Gray Blue', hex: '#9BA6B8' },
-        '161': { name: 'Gray Blue', hex: '#78849A' },
-        '162': { name: 'Ultra Pale Blue', hex: '#DBECF8' },
-        '166': { name: 'Moss Green Medium Light', hex: '#A8B534' },
-        '169': { name: 'Light Pewter', hex: '#888888' },
-        '208': { name: 'Very Dark Lavender', hex: '#8A5A9C' },
-        '209': { name: 'Dark Lavender', hex: '#A378B5' },
-        '210': { name: 'Medium Lavender', hex: '#C39FD1' },
-        '211': { name: 'Light Lavender', hex: '#DFC5E8' },
-        '221': { name: 'Very Dark Shell Pink', hex: '#98484D' },
-        '223': { name: 'Light Shell Pink', hex: '#CC8A86' },
-        '224': { name: 'Very Light Shell Pink', hex: '#EBB7B1' },
-        '225': { name: 'Ultra Very Light Shell Pink', hex: '#F9DDD4' },
-        '300': { name: 'Very Dark Mahogany', hex: '#6F2F18' },
-        '301': { name: 'Medium Mahogany', hex: '#B35F2B' },
-        '304': { name: 'Medium Red', hex: '#B71F33' },
-        '307': { name: 'Lemon', hex: '#FDE94A' },
-        '309': { name: 'Dark Rose', hex: '#BA3A67' },
-        '310': { name: 'Black', hex: '#141416' },
-        '311': { name: 'Medium Navy Blue', hex: '#1C4870' },
-        '312': { name: 'Very Dark Baby Blue', hex: '#275988' },
-        '315': { name: 'Medium Dark Antique Mauve', hex: '#804556' },
-        '316': { name: 'Medium Antique Mauve', hex: '#B77382' },
-        '317': { name: 'Pewter Gray', hex: '#6C6D70' },
-        '318': { name: 'Light Steel Gray', hex: '#8E9196' },
-        '319': { name: 'Very Dark Pistachio Green', hex: '#204B2B' },
-        '320': { name: 'Medium Pistachio Green', hex: '#698D69' },
-        '321': { name: 'Red', hex: '#C72438' },
-        '322': { name: 'Dark Navy Blue', hex: '#22527D' },
-        '326': { name: 'Deep Rose', hex: '#B3365B' },
-        '327': { name: 'Dark Antique Violet', hex: '#633663' },
-        '333': { name: 'Very Dark Blue Violet', hex: '#5C547B' },
-        '334': { name: 'Medium Baby Blue', hex: '#739EC6' },
-        '335': { name: 'Rose', hex: '#EC6A87' },
-        '336': { name: 'Navy Blue', hex: '#17365D' },
-        '340': { name: 'Medium Blue Violet', hex: '#8A9AC7' },
-        '341': { name: 'Light Blue Violet', hex: '#B6C1DF' },
-        '347': { name: 'Very Dark Salmon', hex: '#C23832' },
-        '349': { name: 'Dark Coral', hex: '#CE2332' },
-        '350': { name: 'Coral', hex: '#E04843' },
-        '351': { name: 'Light Coral', hex: '#EB6B62' },
-        '352': { name: 'Light Coral', hex: '#F38B7E' },
-        '353': { name: 'Peach', hex: '#F9AC9A' },
-        '355': { name: 'Dark Terra Cotta', hex: '#983529' },
-        '356': { name: 'Medium Terra Cotta', hex: '#C55543' },
-        '367': { name: 'Dark Pistachio Green', hex: '#496E4B' },
-        '368': { name: 'Light Pistachio Green', hex: '#8DA97E' },
-        '369': { name: 'Very Light Pistachio Green', hex: '#B8CFA9' },
-        '370': { name: 'Medium Mustard', hex: '#B89D54' },
-        '371': { name: 'Mustard', hex: '#C5AA5E' },
-        '372': { name: 'Light Mustard', hex: '#CCB472' },
-        '400': { name: 'Dark Mahogany', hex: '#8F461E' },
-        '402': { name: 'Very Light Mahogany', hex: '#E18A56' },
-        '407': { name: 'Dark Sand', hex: '#BB856B' },
-        '413': { name: 'Dark Pewter Gray', hex: '#515255' },
-        '414': { name: 'Dark Steel Gray', hex: '#7A7D82' },
-        '415': { name: 'Pearl Gray', hex: '#B4B7BC' },
-        '420': { name: 'Dark Hazelnut Brown', hex: '#946B35' },
-        '422': { name: 'Light Hazelnut Brown', hex: '#C69B63' },
-        '433': { name: 'Medium Brown', hex: '#7A4924' },
-        '434': { name: 'Light Brown', hex: '#985E32' },
-        '435': { name: 'Very Light Brown', hex: '#B57845' },
-        '436': { name: 'Tan', hex: '#C78E54' },
-        '437': { name: 'Light Tan', hex: '#D8A972' },
-        '444': { name: 'Dark Lemon', hex: '#FCD927' },
-        '445': { name: 'Light Lemon', hex: '#FCF18A' },
-        '451': { name: 'Dark Shell Gray', hex: '#8F827B' },
-        '452': { name: 'Medium Shell Gray', hex: '#A99C95' },
-        '453': { name: 'Light Shell Gray', hex: '#C8BCB5' },
-        '469': { name: 'Avocado Green', hex: '#6C8436' },
-        '470': { name: 'Light Avocado Green', hex: '#859E47' },
-        '471': { name: 'Very Light Avocado Green', hex: '#A3BC5C' },
-        '472': { name: 'Ultra Light Avocado Green', hex: '#C3D67A' },
-        '498': { name: 'Dark Christmas Red', hex: '#9E1B2B' },
-        '500': { name: 'Very Dark Blue Green', hex: '#2B4B3F' },
-        '501': { name: 'Dark Blue Green', hex: '#3E6556' },
-        '502': { name: 'Blue Green', hex: '#5B8776' },
-        '503': { name: 'Medium Blue Green', hex: '#7FA896' },
-        '504': { name: 'Very Light Blue Green', hex: '#A3C6B6' },
-        '517': { name: 'Dark Wedgwood', hex: '#4B7B9A' },
-        '518': { name: 'Light Wedgwood', hex: '#6B99B8' },
-        '519': { name: 'Sky Blue', hex: '#96BED8' },
-        '520': { name: 'Dark Fern Green', hex: '#4E5B3B' },
-        '522': { name: 'Fern Green', hex: '#7E8D6B' },
-        '524': { name: 'Very Light Fern Green', hex: '#B4C1A2' },
-        '535': { name: 'Very Light Ash Gray', hex: '#5B5B5E' },
-        '543': { name: 'Ultra Very Light Beige Brown', hex: '#E4C7B2' },
-        '550': { name: 'Very Dark Violet', hex: '#542654' },
-        '552': { name: 'Medium Violet', hex: '#8A4E8A' },
-        '553': { name: 'Violet', hex: '#A36DA3' },
-        '554': { name: 'Light Violet', hex: '#D09ED0' },
-        '561': { name: 'Very Dark Jade', hex: '#285C45' },
-        '562': { name: 'Medium Jade', hex: '#488569' },
-        '563': { name: 'Light Jade', hex: '#78B598' },
-        '564': { name: 'Very Light Jade', hex: '#A3D4BC' },
-        '580': { name: 'Dark Moss Green', hex: '#5D6B24' },
-        '581': { name: 'Moss Green', hex: '#829138' },
-        '597': { name: 'Turquoise', hex: '#4B96A8' },
-        '598': { name: 'Light Turquoise', hex: '#82BDCB' },
-        '600': { name: 'Very Dark Cranberry', hex: '#C4386B' },
-        '601': { name: 'Dark Cranberry', hex: '#C94273' },
-        '602': { name: 'Medium Cranberry', hex: '#DC618D' },
-        '603': { name: 'Cranberry', hex: '#E883A7' },
-        '604': { name: 'Light Cranberry', hex: '#F1A5C0' },
-        '605': { name: 'Very Light Cranberry', hex: '#F8C7D8' },
-        '606': { name: 'Bright Orange-Red', hex: '#E62E19' },
-        '608': { name: 'Bright Orange', hex: '#ED5218' },
-        '610': { name: 'Dark Drab Brown', hex: '#786246' },
-        '611': { name: 'Drab Brown', hex: '#967C5B' },
-        '612': { name: 'Light Drab Brown', hex: '#B49876' },
-        '613': { name: 'Very Light Drab Brown', hex: '#CEB698' },
-        '632': { name: 'Ultra Very Dark Desert Sand', hex: '#965A42' },
-        '640': { name: 'Very Dark Beige Gray', hex: '#7E766B' },
-        '642': { name: 'Dark Beige Gray', hex: '#9C9387' },
-        '644': { name: 'Medium Beige Gray', hex: '#C6BEB2' },
-        '645': { name: 'Very Dark Beaver Gray', hex: '#63605B' },
-        '646': { name: 'Dark Beaver Gray', hex: '#7A7670' },
-        '647': { name: 'Medium Beaver Gray', hex: '#9C9790' },
-        '648': { name: 'Light Beaver Gray', hex: '#B7B2AA' },
-        '666': { name: 'Bright Red', hex: '#D92434' },
-        '676': { name: 'Light Old Gold', hex: '#E0C382' },
-        '677': { name: 'Very Light Old Gold', hex: '#ECE0BA' },
-        '680': { name: 'Dark Old Gold', hex: '#9C7E38' },
-        '699': { name: 'Green', hex: '#1E592C' },
-        '700': { name: 'Bright Green', hex: '#287338' },
-        '701': { name: 'Light Green', hex: '#3B8A48' },
-        '702': { name: 'Kelly Green', hex: '#54A35A' },
-        '703': { name: 'Chartreuse', hex: '#73B85A' },
-        '704': { name: 'Bright Chartreuse', hex: '#96CC66' },
-        '712': { name: 'Cream', hex: '#F6F0DC' },
-        '718': { name: 'Plum', hex: '#982B63' },
-        '720': { name: 'Dark Spice', hex: '#C45328' },
-        '721': { name: 'Medium Spice', hex: '#D86B38' },
-        '722': { name: 'Light Spice', hex: '#E88B54' },
-        '725': { name: 'Topaz', hex: '#F0B738' },
-        '726': { name: 'Light Topaz', hex: '#F7CE52' },
-        '727': { name: 'Very Light Topaz', hex: '#FBE07A' },
-        '729': { name: 'Medium Old Gold', hex: '#C49E42' },
-        '730': { name: 'Very Dark Olive Green', hex: '#786B24' },
-        '732': { name: 'Olive Green', hex: '#8A7E2E' },
-        '734': { name: 'Light Olive Green', hex: '#B4A64E' },
-        '738': { name: 'Very Light Tan', hex: '#D8AE7E' },
-        '739': { name: 'Ultra Very Light Tan', hex: '#E8CCA8' },
-        '740': { name: 'Tangerine', hex: '#EC6B1A' },
-        '741': { name: 'Medium Tangerine', hex: '#F28524' },
-        '742': { name: 'Light Tangerine', hex: '#F7A338' },
-        '743': { name: 'Medium Yellow', hex: '#FBC342' },
-        '744': { name: 'Pale Yellow', hex: '#FCD563' },
-        '745': { name: 'Light Pale Yellow', hex: '#FDE48E' },
-        '746': { name: 'Off White', hex: '#FCF6DC' },
-        '747': { name: 'Sky Blue Very Light', hex: '#C6E6EC' },
-        '754': { name: 'Light Peach', hex: '#F3C2B1' },
-        '758': { name: 'Very Light Terra Cotta', hex: '#DDA291' },
-        '760': { name: 'Salmon', hex: '#E68B82' },
-        '761': { name: 'Light Salmon', hex: '#EFA89E' },
-        '762': { name: 'Very Light Pearl Gray', hex: '#D0D3D8' },
-        '772': { name: 'Very Light Yellow Green', hex: '#C6D8A3' },
-        '775': { name: 'Baby Blue Very Light', hex: '#C6DCE8' },
-        '778': { name: 'Very Light Antique Mauve', hex: '#D8B2BA' },
-        '779': { name: 'Dark Cocoa', hex: '#5E4238' },
-        '780': { name: 'Ultra Very Dark Topaz', hex: '#8F6224' },
-        '782': { name: 'Dark Topaz', hex: '#AE7A2C' },
-        '783': { name: 'Medium Topaz', hex: '#C69238' },
-        '791': { name: 'Very Dark Cornflower Blue', hex: '#384673' },
-        '792': { name: 'Dark Cornflower Blue', hex: '#4E5F94' },
-        '793': { name: 'Medium Cornflower Blue', hex: '#6B7EB4' },
-        '794': { name: 'Light Cornflower Blue', hex: '#8E9FD0' },
-        '796': { name: 'Dark Royal Blue', hex: '#284685' },
-        '797': { name: 'Royal Blue', hex: '#365CA3' },
-        '798': { name: 'Dark Delft Blue', hex: '#4E76AD' },
-        '799': { name: 'Medium Delft Blue', hex: '#6E94C4' },
-        '800': { name: 'Pale Delft Blue', hex: '#A3C0DC' },
-        '801': { name: 'Dark Coffee Brown', hex: '#613E24' },
-        '807': { name: 'Turquoise', hex: '#488CA3' },
-        '809': { name: 'Delft Blue', hex: '#82A6C9' },
-        '813': { name: 'Light Blue', hex: '#82B2D4' },
-        '814': { name: 'Dark Garnet', hex: '#7A192B' },
-        '815': { name: 'Garnet', hex: '#941E32' },
-        '816': { name: 'Garnet', hex: '#A82136' },
-        '817': { name: 'Very Dark Coral Red', hex: '#BA2433' },
-        '818': { name: 'Baby Pink', hex: '#F7C2C6' },
-        '819': { name: 'Light Baby Pink', hex: '#FBE0E2' },
-        '820': { name: 'Very Dark Royal Blue', hex: '#1E3873' },
-        '822': { name: 'Light Beige Gray', hex: '#D8D0C5' },
-        '823': { name: 'Dark Navy Blue', hex: '#1A2B4C' },
-        '824': { name: 'Very Dark Blue', hex: '#2C5E8A' },
-        '825': { name: 'Dark Blue', hex: '#3673A3' },
-        '826': { name: 'Medium Blue', hex: '#4E8EC0' },
-        '827': { name: 'Very Light Blue', hex: '#8BBCE0' },
-        '828': { name: 'Ultra Very Light Blue', hex: '#B4D8EE' },
-        '829': { name: 'Very Dark Golden Olive', hex: '#6B5C28' },
-        '830': { name: 'Dark Golden Olive', hex: '#7E6D32' },
-        '831': { name: 'Medium Golden Olive', hex: '#94823E' },
-        '832': { name: 'Golden Olive', hex: '#A89448' },
-        '833': { name: 'Light Golden Olive', hex: '#BFA954' },
-        '834': { name: 'Very Light Golden Olive', hex: '#D4C06E' },
-        '838': { name: 'Very Dark Beige Brown', hex: '#4E3E30' },
-        '839': { name: 'Dark Beige Brown', hex: '#63503E' },
-        '840': { name: 'Medium Beige Brown', hex: '#7E6854' },
-        '841': { name: 'Light Beige Brown', hex: '#9C846E' },
-        '842': { name: 'Very Light Beige Brown', hex: '#BAA38E' },
-        '844': { name: 'Ultra Dark Beaver Gray', hex: '#4E4B46' },
-        '890': { name: 'Ultra Dark Pistachio Green', hex: '#203E24' },
-        '891': { name: 'Dark Carnation', hex: '#DC4863' },
-        '892': { name: 'Medium Carnation', hex: '#EC6B82' },
-        '893': { name: 'Light Carnation', hex: '#F38E9E' },
-        '894': { name: 'Very Light Carnation', hex: '#F8B4BE' },
-        '895': { name: 'Very Dark Hunter Green', hex: '#365A38' },
-        '898': { name: 'Very Dark Coffee Brown', hex: '#4E321C' },
-        '899': { name: 'Medium Rose', hex: '#E88296' },
-        '900': { name: 'Dark Burnt Orange', hex: '#CE541C' },
-        '902': { name: 'Very Dark Garnet', hex: '#782232' },
-        '904': { name: 'Very Dark Parrot Green', hex: '#3E6E28' },
-        '905': { name: 'Dark Parrot Green', hex: '#4E8232' },
-        '906': { name: 'Medium Parrot Green', hex: '#6B9E42' },
-        '907': { name: 'Light Parrot Green', hex: '#8EC054' },
-        '909': { name: 'Very Dark Emerald Green', hex: '#206338' },
-        '910': { name: 'Dark Emerald Green', hex: '#287842' },
-        '911': { name: 'Medium Emerald Green', hex: '#328E52' },
-        '912': { name: 'Light Emerald Green', hex: '#48A366' },
-        '913': { name: 'Medium Nile Green', hex: '#6BB882' },
-        '915': { name: 'Dark Plum', hex: '#982454' },
-        '917': { name: 'Medium Plum', hex: '#B8346B' },
-        '919': { name: 'Red Copper', hex: '#9E3E1C' },
-        '920': { name: 'Copper', hex: '#B85428' },
-        '921': { name: 'Copper', hex: '#CC6B36' },
-        '922': { name: 'Light Copper', hex: '#DC854E' },
-        '924': { name: 'Very Dark Gray Green', hex: '#4E6363' },
-        '926': { name: 'Medium Gray Green', hex: '#789191' },
-        '927': { name: 'Light Gray Green', hex: '#9CB4B4' },
-        '928': { name: 'Very Light Gray Green', hex: '#B8CCCC' },
-        '930': { name: 'Dark Antique Blue', hex: '#4E667E' },
-        '931': { name: 'Medium Antique Blue', hex: '#6B859E' },
-        '932': { name: 'Light Antique Blue', hex: '#94AEC6' },
-        '934': { name: 'Black Avocado Green', hex: '#323E20' },
-        '935': { name: 'Dark Avocado Green', hex: '#424E28' },
-        '936': { name: 'Very Dark Avocado Green', hex: '#546332' },
-        '937': { name: 'Medium Avocado Green', hex: '#63733E' },
-        '938': { name: 'Ultra Dark Coffee Brown', hex: '#3E2816' },
-        '939': { name: 'Very Dark Navy Blue', hex: '#142238' },
-        '943': { name: 'Medium Aquamarine', hex: '#3E8E78' },
-        '945': { name: 'Tawny', hex: '#E6B494' },
-        '946': { name: 'Burnt Orange', hex: '#DF5E1E' },
-        '947': { name: 'Burnt Orange', hex: '#E87328' },
-        '948': { name: 'Very Light Peach', hex: '#F7D0C2' },
-        '950': { name: 'Light Sand', hex: '#E8B8A3' },
-        '951': { name: 'Light Tawny', hex: '#F2C6AE' },
-        '954': { name: 'Nile Green', hex: '#8EC69E' },
-        '955': { name: 'Light Nile Green', hex: '#A8D8B8' },
-        '956': { name: 'Geranium', hex: '#E85263' },
-        '957': { name: 'Pale Geranium', hex: '#EC7382' },
-        '958': { name: 'Dark Aquamarine', hex: '#388573' },
-        '959': { name: 'Medium Aquamarine', hex: '#54A38E' },
-        '961': { name: 'Dark Dusty Rose', hex: '#C9546B' },
-        '962': { name: 'Medium Dusty Rose', hex: '#DC7388' },
-        '963': { name: 'Ultra Very Light Dusty Rose', hex: '#F3B8C2' },
-        '964': { name: 'Light Aquamarine', hex: '#94CFC0' },
-        '966': { name: 'Baby Green', hex: '#B4D4B8' },
-        '967': { name: 'Light Apricot', hex: '#F2B8A3' },
-        '972': { name: 'Deep Canary', hex: '#F2A624' },
-        '973': { name: 'Bright Canary', hex: '#F7C21E' },
-        '975': { name: 'Dark Golden Brown', hex: '#8E5A22' },
-        '976': { name: 'Medium Golden Brown', hex: '#B47832' },
-        '977': { name: 'Light Golden Brown', hex: '#C98E42' },
-        '986': { name: 'Very Dark Forest Green', hex: '#3E6332' },
-        '987': { name: 'Dark Forest Green', hex: '#4E783E' },
-        '988': { name: 'Medium Forest Green', hex: '#6B9454' },
-        '989': { name: 'Forest Green', hex: '#82A86B' },
-        '991': { name: 'Dark Aquamarine', hex: '#326E5E' },
-        '992': { name: 'Medium Aquamarine', hex: '#488878' },
-        '993': { name: 'Light Aquamarine', hex: '#6BA394' },
-        '995': { name: 'Dark Electric Blue', hex: '#287898' },
-        '996': { name: 'Medium Electric Blue', hex: '#489EC0' },
-        '3021': { name: 'Very Dark Brown Gray', hex: '#544E46' },
-        '3022': { name: 'Medium Brown Gray', hex: '#8E887E' },
-        '3023': { name: 'Light Brown Gray', hex: '#B4AEA3' },
-        '3024': { name: 'Very Light Brown Gray', hex: '#CFCAC0' },
-        '3031': { name: 'Very Dark Mocha Brown', hex: '#4E3E30' },
-        '3032': { name: 'Medium Mocha Brown', hex: '#8E7863' },
-        '3033': { name: 'Very Light Mocha Brown', hex: '#C6B4A3' },
-        '3041': { name: 'Medium Antique Violet', hex: '#8E6B7E' },
-        '3042': { name: 'Light Antique Violet', hex: '#B494A3' },
-        '3045': { name: 'Dark Yellow Beige', hex: '#B4945E' },
-        '3046': { name: 'Medium Yellow Beige', hex: '#C9AE78' },
-        '3047': { name: 'Light Yellow Beige', hex: '#DEC694' },
-        '3051': { name: 'Dark Green Gray', hex: '#5E664E' },
-        '3052': { name: 'Medium Green Gray', hex: '#828C70' },
-        '3053': { name: 'Light Green Gray', hex: '#A3AC90' },
-        '3064': { name: 'Desert Sand', hex: '#B8856B' },
-        '3072': { name: 'Very Light Beaver Gray', hex: '#D0CCC5' },
-        '3078': { name: 'Very Light Golden Yellow', hex: '#FCF4B4' },
-        '3325': { name: 'Light Baby Blue', hex: '#94BCD8' },
-        '3326': { name: 'Light Rose', hex: '#E68294' },
-        '3328': { name: 'Dark Salmon', hex: '#C9545E' },
-        '3340': { name: 'Medium Apricot', hex: '#DC634E' },
-        '3341': { name: 'Apricot', hex: '#EC826B' },
-        '3345': { name: 'Dark Hunter Green', hex: '#3E6E42' },
-        '3346': { name: 'Hunter Green', hex: '#4E8552' },
-        '3347': { name: 'Medium Yellow Green', hex: '#639E63' },
-        '3348': { name: 'Light Yellow Green', hex: '#8EC07E' },
-        '3350': { name: 'Ultra Dark Dusty Rose', hex: '#B83E54' },
-        '3354': { name: 'Light Dusty Rose', hex: '#DC8E9E' },
-        '3362': { name: 'Dark Pine Green', hex: '#4E6342' },
-        '3363': { name: 'Medium Pine Green', hex: '#6B825E' },
-        '3364': { name: 'Pine Green', hex: '#859E78' },
-        '3371': { name: 'Black Brown', hex: '#281E16' },
-        '3607': { name: 'Light Plum', hex: '#C4548E' },
-        '3608': { name: 'Very Light Plum', hex: '#DC82B4' },
-        '3609': { name: 'Ultra Light Plum', hex: '#E8A8C9' },
-        '3685': { name: 'Very Dark Mauve', hex: '#822842' },
-        '3687': { name: 'Mauve', hex: '#A83E5E' },
-        '3688': { name: 'Medium Mauve', hex: '#C96B85' },
-        '3689': { name: 'Light Mauve', hex: '#E094A8' },
-        '3705': { name: 'Dark Melon', hex: '#DC485E' },
-        '3706': { name: 'Medium Melon', hex: '#E86378' },
-        '3708': { name: 'Light Melon', hex: '#F38E9E' },
-        '3712': { name: 'Medium Salmon', hex: '#D8635E' },
-        '3713': { name: 'Very Light Salmon', hex: '#F2C2BA' },
-        '3716': { name: 'Very Light Dusty Rose', hex: '#E8A3B4' },
-        '3721': { name: 'Dark Shell Pink', hex: '#A84E54' },
-        '3722': { name: 'Medium Shell Pink', hex: '#BC5E63' },
-        '3726': { name: 'Dark Antique Mauve', hex: '#945466' },
-        '3727': { name: 'Light Antique Mauve', hex: '#C98E9E' },
-        '3731': { name: 'Very Dark Dusty Rose', hex: '#C94863' },
-        '3733': { name: 'Dusty Rose', hex: '#DC7388' },
-        '3740': { name: 'Dark Antique Violet', hex: '#78546B' },
-        '3743': { name: 'Very Light Antique Violet', hex: '#CCB4C2' },
-        '3746': { name: 'Dark Blue Violet', hex: '#6B6394' },
-        '3747': { name: 'Very Light Blue Violet', hex: '#B4BCE0' },
-        '3750': { name: 'Very Dark Antique Blue', hex: '#38546B' },
-        '3752': { name: 'Very Light Antique Blue', hex: '#B4C6D8' },
-        '3753': { name: 'Ultra Very Light Antique Blue', hex: '#CFDCE8' },
-        '3755': { name: 'Baby Blue', hex: '#78A8CC' },
-        '3756': { name: 'Ultra Very Light Baby Blue', hex: '#DCEAF2' },
-        '3760': { name: 'Medium Wedgwood', hex: '#4882A3' },
-        '3761': { name: 'Light Sky Blue', hex: '#A3CED8' },
-        '3765': { name: 'Very Dark Peacock Blue', hex: '#38738E' },
-        '3766': { name: 'Light Peacock Blue', hex: '#549AB4' },
-        '3768': { name: 'Dark Gray Green', hex: '#637E7E' },
-        '3770': { name: 'Very Light Tawny', hex: '#F7DFC6' },
-        '3771': { name: 'Ultra Very Light Terra Cotta', hex: '#E8B8A8' },
-        '3772': { name: 'Very Dark Desert Sand', hex: '#8E543E' },
-        '3773': { name: 'Medium Desert Sand', hex: '#B8826B' },
-        '3774': { name: 'Very Light Desert Sand', hex: '#E0B49E' },
-        '3776': { name: 'Light Mahogany', hex: '#C96B3E' },
-        '3777': { name: 'Very Dark Terra Cotta', hex: '#82281E' },
-        '3778': { name: 'Light Terra Cotta', hex: '#C96E54' },
-        '3779': { name: 'Ultra Very Light Terra Cotta', hex: '#E8B4A3' },
-        '3781': { name: 'Dark Mocha Brown', hex: '#6B543E' },
-        '3782': { name: 'Light Mocha Brown', hex: '#A8947E' },
-        '3787': { name: 'Dark Brown Gray', hex: '#6E685E' },
-        '3790': { name: 'Ultra Dark Beige Gray', hex: '#6E665E' },
-        '3799': { name: 'Very Dark Pewter Gray', hex: '#3E3E42' },
-        '3801': { name: 'Very Dark Melon', hex: '#C9384E' },
-        '3802': { name: 'Very Dark Antique Mauve', hex: '#784254' },
-        '3803': { name: 'Dark Mauve', hex: '#943854' },
-        '3804': { name: 'Dark Cyclamen Pink', hex: '#C9386B' },
-        '3805': { name: 'Cyclamen Pink', hex: '#DC4E7E' },
-        '3806': { name: 'Light Cyclamen Pink', hex: '#EC739E' },
-        '3807': { name: 'Cornflower Blue', hex: '#546394' },
-        '3808': { name: 'Ultra Very Dark Turquoise', hex: '#387382' },
-        '3809': { name: 'Very Dark Turquoise', hex: '#428898' },
-        '3810': { name: 'Dark Turquoise', hex: '#549CA8' },
-        '3811': { name: 'Very Light Turquoise', hex: '#94CCD4' },
-        '3812': { name: 'Very Dark Seagreen', hex: '#488878' },
-        '3813': { name: 'Light Blue Green', hex: '#94C0AE' },
-        '3814': { name: 'Aquamarine', hex: '#639E8E' },
-        '3815': { name: 'Dark Celadon Green', hex: '#54785E' },
-        '3816': { name: 'Medium Celadon Green', hex: '#789E82' },
-        '3817': { name: 'Light Celadon Green', hex: '#9EC0A8' },
-        '3818': { name: 'Ultra Very Dark Emerald Green', hex: '#325E3E' },
-        '3819': { name: 'Light Moss Green', hex: '#A8C454' },
-        '3820': { name: 'Dark Straw', hex: '#C9A34E' },
-        '3821': { name: 'Straw', hex: '#D8B45E' },
-        '3822': { name: 'Light Straw', hex: '#E4C678' },
-        '3823': { name: 'Ultra Pale Yellow', hex: '#FCF4A8' },
-        '3824': { name: 'Light Apricot', hex: '#EC9E94' },
-        '3825': { name: 'Pale Pumpkin', hex: '#EC9478' },
-        '3826': { name: 'Golden Brown', hex: '#9E6328' },
-        '3827': { name: 'Pale Golden Brown', hex: '#C48238' },
-        '3828': { name: 'Hazelnut Brown', hex: '#A87338' },
-        '3829': { name: 'Very Dark Old Gold', hex: '#826824' },
-        '3830': { name: 'Medium Terra Cotta', hex: '#B44838' },
-        '3831': { name: 'Dark Raspberry', hex: '#9E2838' },
-        '3832': { name: 'Medium Raspberry', hex: '#C44854' },
-        '3833': { name: 'Light Raspberry', hex: '#DC6E78' },
-        '3834': { name: 'Dark Grape', hex: '#6E385E' },
-        '3835': { name: 'Medium Grape', hex: '#94547E' },
-        '3836': { name: 'Light Grape', hex: '#B4789E' },
-        '3837': { name: 'Ultra Dark Lavender', hex: '#633E78' },
-        '3838': { name: 'Dark Lavender Blue', hex: '#546894' },
-        '3839': { name: 'Medium Lavender Blue', hex: '#6B7EA8' },
-        '3840': { name: 'Light Lavender Blue', hex: '#94A6C9' },
-        '3841': { name: 'Pale Lavender Blue', hex: '#B8C6DC' },
-        '3842': { name: 'Dark Wedgwood', hex: '#38637E' },
-        '3843': { name: 'Electric Blue', hex: '#288EC0' },
-        '3844': { name: 'Bright Turquoise', hex: '#289EC0' },
-        '3845': { name: 'Medium Turquoise', hex: '#38A8C0' },
-        '3846': { name: 'Light Turquoise', hex: '#54B8CC' },
-        '3847': { name: 'Dark Teal Green', hex: '#326E6E' },
-        '3848': { name: 'Medium Teal Green', hex: '#428282' },
-        '3849': { name: 'Light Teal Green', hex: '#549898' },
-        '3850': { name: 'Dark Bright Green', hex: '#387863' },
-        '3851': { name: 'Light Bright Green', hex: '#549E82' },
-        '3852': { name: 'Very Dark Straw', hex: '#C4942C' },
-        '3853': { name: 'Dark Autumn Gold', hex: '#C97828' },
-        '3854': { name: 'Medium Autumn Gold', hex: '#DC8E38' },
-        '3855': { name: 'Light Autumn Gold', hex: '#ECA854' },
-        '3856': { name: 'Ultra Very Light Mahogany', hex: '#E8A882' },
-        '3857': { name: 'Dark Rosewood', hex: '#9E3E32' },
-        '3858': { name: 'Medium Rosewood', hex: '#B85448' },
-        '3859': { name: 'Light Rosewood', hex: '#C9786E' },
-        '3860': { name: 'Heather Violet', hex: '#825E78' },
-        '3861': { name: 'Light Heather Violet', hex: '#A38298' },
-        '3862': { name: 'Dark Mocha Beige', hex: '#78634E' },
-        '3863': { name: 'Medium Mocha Beige', hex: '#9E8873' },
-        '3864': { name: 'Light Mocha Beige', hex: '#C4B09E' },
-        '3865': { name: 'Winter White', hex: '#F9F6EE' },
-        '3866': { name: 'Ultra Very Light Mocha Brown', hex: '#D8C8B8' }
+        "B5200": { name: "Snow White", hex: "#FFFFFF", family: "Neutral", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "BLANC": { name: "White", hex: "#FCFCFC", family: "Neutral", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "ECRU": { name: "Ecru", hex: "#F0EAD6", family: "Neutral", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "01": { name: "White Tin", hex: "#C5C5C5", family: "Neutral", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "02": { name: "Tin", hex: "#ABABAB", family: "Neutral", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "03": { name: "Medium Tin", hex: "#908F90", family: "Neutral", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "04": { name: "Dark Tin", hex: "#676464", family: "Neutral", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "05": { name: "Light Driftwood", hex: "#BBAFAD", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "06": { name: "Medium Light Driftwood", hex: "#B4A293", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "07": { name: "Driftwood", hex: "#746256", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "08": { name: "Dark Driftwood", hex: "#695B50", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "09": { name: "Very Dark Cocoa", hex: "#483837", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "10": { name: "Very Light Tender Green", hex: "#CECEB8", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "11": { name: "Light Tender Green", hex: "#E0DC84", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "12": { name: "Tender Green", hex: "#CFC662", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "13": { name: "Medium Light Nile Green", hex: "#98C29C", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "14": { name: "Pale Apple Green", hex: "#CED194", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "15": { name: "Apple Green", hex: "#CDD684", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "16": { name: "Light Chartreuse", hex: "#B0B56A", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "17": { name: "Light Yellow Plum", hex: "#D5C551", family: "Yellow", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "18": { name: "Yellow Plum", hex: "#D9BF4A", family: "Yellow", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "19": { name: "Medium Light Autumn Gold", hex: "#CC9C52", family: "Yellow", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "20": { name: "Shrimp", hex: "#F7D1B3", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "21": { name: "Light Alizarin", hex: "#C0614D", family: "Red", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "22": { name: "Alizarin", hex: "#922A29", family: "Red", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "23": { name: "Apple Blossom", hex: "#E8DADF", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "24": { name: "White Lavender", hex: "#E0D9E4", family: "Purple", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "25": { name: "Ultra Light Lavender", hex: "#D0CADB", family: "Purple", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "26": { name: "Pale Lavender", hex: "#BBB0D1", family: "Purple", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "27": { name: "White Violet", hex: "#D9D4D8", family: "Purple", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "28": { name: "Medium Light Eggplant", hex: "#8178A0", family: "Purple", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "29": { name: "Eggplant", hex: "#493C5E", family: "Purple", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "30": { name: "Medium Light Blueberry", hex: "#8A89B0", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "31": { name: "Blueberry", hex: "#65629D", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "32": { name: "Dark Blueberry", hex: "#565385", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "33": { name: "Fuchsia", hex: "#884B8E", family: "Purple", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "34": { name: "Dark Fuchsia", hex: "#7A3070", family: "Purple", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "35": { name: "Very Dark Fuchsia", hex: "#58274B", family: "Purple", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "48": { name: "Indian Rose Ombr\u00e9", hex: "#C86A86", family: "Pink", line: "Variations" },
+        "51": { name: "Pumpkin Ombr\u00e9", hex: "#E27638", family: "Orange", line: "Variations" },
+        "52": { name: "Violet Perfume Ombr\u00e9", hex: "#8C6BB1", family: "Purple", line: "Variations" },
+        "53": { name: "Nocturnal Ombr\u00e9", hex: "#5D6478", family: "Blue", line: "Variations" },
+        "69": { name: "Mahogany Ombr\u00e9", hex: "#7E3A28", family: "Brown", line: "Variations" },
+        "90": { name: "Sunny Yellow Ombr\u00e9", hex: "#E8C848", family: "Yellow", line: "Variations" },
+        "92": { name: "Foliage Green Ombr\u00e9", hex: "#5A8E4B", family: "Green", line: "Variations" },
+        "93": { name: "Cornflower Ombr\u00e9", hex: "#5B78B8", family: "Blue", line: "Variations" },
+        "94": { name: "Moss Green Ombr\u00e9", hex: "#7C8A38", family: "Green", line: "Variations" },
+        "99": { name: "Redoute Rose Ombr\u00e9", hex: "#C6425A", family: "Pink", line: "Variations" },
+        "105": { name: "Woodwork Ombr\u00e9", hex: "#8B6A4B", family: "Brown", line: "Variations" },
+        "106": { name: "Mercurochrome Ombr\u00e9", hex: "#D85842", family: "Red", line: "Variations" },
+        "107": { name: "Passion Pink Ombr\u00e9", hex: "#D4567E", family: "Pink", line: "Variations" },
+        "111": { name: "Burnt Savannah Ombr\u00e9", hex: "#C2883C", family: "Yellow", line: "Variations" },
+        "115": { name: "Opera Red Ombr\u00e9", hex: "#B5283C", family: "Red", line: "Variations" },
+        "121": { name: "Cyclades Blue Ombr\u00e9", hex: "#4C82B2", family: "Blue", line: "Variations" },
+        "125": { name: "Spring Green Ombr\u00e9", hex: "#7EB468", family: "Green", line: "Variations" },
+        "150": { name: "Ultra Very Dark Dusty Rose", hex: "#AB0249", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "151": { name: "Very Light Dusty Rose", hex: "#F0CED4", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "152": { name: "Medium Light Shell Pink", hex: "#E2A099", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "153": { name: "Very Light Violet", hex: "#E6CCD9", family: "Purple", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "154": { name: "Very Dark Grape", hex: "#572236", family: "Purple", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "155": { name: "Medium Dark Blue Violet", hex: "#9896C4", family: "Purple", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "156": { name: "Medium Light Blue Violet", hex: "#A3A8CE", family: "Purple", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "157": { name: "Very Light Cornflower Blue", hex: "#BBC3DE", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "158": { name: "Medium Very Dark Cornflower Blue", hex: "#4C5A7E", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "159": { name: "Light Gray Blue", hex: "#C6CEDB", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "160": { name: "Medium Gray Blue", hex: "#9BA6B8", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "161": { name: "Gray Blue", hex: "#78849A", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "162": { name: "Ultra Pale Blue", hex: "#DBECF8", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "163": { name: "Medium Celadon Green", hex: "#4E805E", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "164": { name: "Light Forest Green", hex: "#9EC088", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "165": { name: "Very Light Moss Green", hex: "#EFF196", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "166": { name: "Moss Green Medium Light", hex: "#A8B534", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "167": { name: "Very Dark Yellow Beige", hex: "#A77C4A", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "168": { name: "Very Light Pewter", hex: "#D1D3D6", family: "Neutral", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "169": { name: "Light Pewter", hex: "#888888", family: "Neutral", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "208": { name: "Very Dark Lavender", hex: "#8A5A9C", family: "Purple", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "209": { name: "Dark Lavender", hex: "#A378B5", family: "Purple", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "210": { name: "Medium Lavender", hex: "#C39FD1", family: "Purple", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "211": { name: "Light Lavender", hex: "#DFC5E8", family: "Purple", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "221": { name: "Very Dark Shell Pink", hex: "#98484D", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "223": { name: "Light Shell Pink", hex: "#CC8A86", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "224": { name: "Very Light Shell Pink", hex: "#EBB7B1", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "225": { name: "Ultra Very Light Shell Pink", hex: "#F9DDD4", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "300": { name: "Very Dark Mahogany", hex: "#6F2F18", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "301": { name: "Medium Mahogany", hex: "#B35F2B", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "304": { name: "Medium Red", hex: "#B71F33", family: "Red", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "307": { name: "Lemon", hex: "#FDE94A", family: "Yellow", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "309": { name: "Dark Rose", hex: "#BA3A67", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "310": { name: "Black", hex: "#141416", family: "Neutral", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "311": { name: "Medium Navy Blue", hex: "#1C4870", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "312": { name: "Very Dark Baby Blue", hex: "#275988", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "315": { name: "Medium Dark Antique Mauve", hex: "#804556", family: "Purple", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "316": { name: "Medium Antique Mauve", hex: "#B77382", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "317": { name: "Pewter Gray", hex: "#6C6D70", family: "Neutral", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "318": { name: "Light Steel Gray", hex: "#8E9196", family: "Neutral", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "319": { name: "Very Dark Pistachio Green", hex: "#204B2B", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "320": { name: "Medium Pistachio Green", hex: "#698D69", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "321": { name: "Red", hex: "#C72438", family: "Red", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "322": { name: "Dark Navy Blue", hex: "#22527D", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "326": { name: "Deep Rose", hex: "#B3365B", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "327": { name: "Dark Antique Violet", hex: "#633663", family: "Purple", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "333": { name: "Very Dark Blue Violet", hex: "#5C547B", family: "Purple", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "334": { name: "Medium Baby Blue", hex: "#739EC6", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "335": { name: "Rose", hex: "#EC6A87", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "336": { name: "Navy Blue", hex: "#17365D", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "340": { name: "Medium Blue Violet", hex: "#8A9AC7", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "341": { name: "Light Blue Violet", hex: "#B6C1DF", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "347": { name: "Very Dark Salmon", hex: "#C23832", family: "Red", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "349": { name: "Dark Coral", hex: "#CE2332", family: "Red", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "350": { name: "Coral", hex: "#E04843", family: "Red", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "351": { name: "Light Coral", hex: "#EB6B62", family: "Orange", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "352": { name: "Light Coral", hex: "#F38B7E", family: "Orange", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "353": { name: "Peach", hex: "#F9AC9A", family: "Orange", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "355": { name: "Dark Terra Cotta", hex: "#983529", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "356": { name: "Medium Terra Cotta", hex: "#C55543", family: "Orange", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "367": { name: "Dark Pistachio Green", hex: "#496E4B", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "368": { name: "Light Pistachio Green", hex: "#8DA97E", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "369": { name: "Very Light Pistachio Green", hex: "#B8CFA9", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "370": { name: "Medium Mustard", hex: "#B89D54", family: "Yellow", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "371": { name: "Mustard", hex: "#C5AA5E", family: "Yellow", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "372": { name: "Light Mustard", hex: "#CCB472", family: "Yellow", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "400": { name: "Dark Mahogany", hex: "#8F461E", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "402": { name: "Very Light Mahogany", hex: "#E18A56", family: "Orange", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "407": { name: "Dark Sand", hex: "#BB856B", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "413": { name: "Dark Pewter Gray", hex: "#515255", family: "Neutral", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "414": { name: "Dark Steel Gray", hex: "#7A7D82", family: "Neutral", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "415": { name: "Pearl Gray", hex: "#B4B7BC", family: "Neutral", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "420": { name: "Dark Hazelnut Brown", hex: "#946B35", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "422": { name: "Light Hazelnut Brown", hex: "#C69B63", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "433": { name: "Medium Brown", hex: "#7A4924", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "434": { name: "Light Brown", hex: "#985E32", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "435": { name: "Very Light Brown", hex: "#B57845", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "436": { name: "Tan", hex: "#C78E54", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "437": { name: "Light Tan", hex: "#D8A972", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "444": { name: "Dark Lemon", hex: "#FCD927", family: "Yellow", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "445": { name: "Light Lemon", hex: "#FCF18A", family: "Yellow", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "451": { name: "Dark Shell Gray", hex: "#8F827B", family: "Neutral", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "452": { name: "Medium Shell Gray", hex: "#A99C95", family: "Neutral", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "453": { name: "Light Shell Gray", hex: "#C8BCB5", family: "Neutral", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "469": { name: "Avocado Green", hex: "#6C8436", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "470": { name: "Light Avocado Green", hex: "#859E47", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "471": { name: "Very Light Avocado Green", hex: "#A3BC5C", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "472": { name: "Ultra Light Avocado Green", hex: "#C3D67A", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "498": { name: "Dark Christmas Red", hex: "#9E1B2B", family: "Red", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "500": { name: "Very Dark Blue Green", hex: "#2B4B3F", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "501": { name: "Dark Blue Green", hex: "#3E6556", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "502": { name: "Blue Green", hex: "#5B8776", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "503": { name: "Medium Blue Green", hex: "#7FA896", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "504": { name: "Very Light Blue Green", hex: "#A3C6B6", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "505": { name: "Jade Green", hex: "#338367", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "517": { name: "Dark Wedgwood", hex: "#4B7B9A", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "518": { name: "Light Wedgwood", hex: "#6B99B8", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "519": { name: "Sky Blue", hex: "#96BED8", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "520": { name: "Dark Fern Green", hex: "#4E5B3B", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "522": { name: "Fern Green", hex: "#7E8D6B", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "523": { name: "Light Fern Green", hex: "#9AA88A", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "524": { name: "Very Light Fern Green", hex: "#B4C1A2", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "535": { name: "Very Light Ash Gray", hex: "#5B5B5E", family: "Neutral", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "543": { name: "Ultra Very Light Beige Brown", hex: "#E4C7B2", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "550": { name: "Very Dark Violet", hex: "#542654", family: "Purple", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "552": { name: "Medium Violet", hex: "#8A4E8A", family: "Purple", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "553": { name: "Violet", hex: "#A36DA3", family: "Purple", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "554": { name: "Light Violet", hex: "#D09ED0", family: "Purple", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "561": { name: "Very Dark Jade", hex: "#285C45", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "562": { name: "Medium Jade", hex: "#488569", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "563": { name: "Light Jade", hex: "#78B598", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "564": { name: "Very Light Jade", hex: "#A3D4BC", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "580": { name: "Dark Moss Green", hex: "#5D6B24", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "581": { name: "Moss Green", hex: "#829138", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "597": { name: "Turquoise", hex: "#4B96A8", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "598": { name: "Light Turquoise", hex: "#82BDCB", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "600": { name: "Very Dark Cranberry", hex: "#C4386B", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "601": { name: "Dark Cranberry", hex: "#C94273", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "602": { name: "Medium Cranberry", hex: "#DC618D", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "603": { name: "Cranberry", hex: "#E883A7", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "604": { name: "Light Cranberry", hex: "#F1A5C0", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "605": { name: "Very Light Cranberry", hex: "#F8C7D8", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "606": { name: "Bright Orange-Red", hex: "#E62E19", family: "Orange", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "608": { name: "Bright Orange", hex: "#ED5218", family: "Orange", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "610": { name: "Dark Drab Brown", hex: "#786246", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "611": { name: "Drab Brown", hex: "#967C5B", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "612": { name: "Light Drab Brown", hex: "#B49876", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "613": { name: "Very Light Drab Brown", hex: "#CEB698", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "632": { name: "Ultra Very Dark Desert Sand", hex: "#965A42", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "640": { name: "Very Dark Beige Gray", hex: "#7E766B", family: "Neutral", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "642": { name: "Dark Beige Gray", hex: "#9C9387", family: "Neutral", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "644": { name: "Medium Beige Gray", hex: "#C6BEB2", family: "Neutral", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "645": { name: "Very Dark Beaver Gray", hex: "#63605B", family: "Neutral", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "646": { name: "Dark Beaver Gray", hex: "#7A7670", family: "Neutral", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "647": { name: "Medium Beaver Gray", hex: "#9C9790", family: "Neutral", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "648": { name: "Light Beaver Gray", hex: "#B7B2AA", family: "Neutral", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "666": { name: "Bright Red", hex: "#D92434", family: "Red", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "676": { name: "Light Old Gold", hex: "#E0C382", family: "Yellow", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "677": { name: "Very Light Old Gold", hex: "#ECE0BA", family: "Yellow", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "680": { name: "Dark Old Gold", hex: "#9C7E38", family: "Yellow", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "699": { name: "Green", hex: "#1E592C", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "700": { name: "Bright Green", hex: "#287338", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "701": { name: "Light Green", hex: "#3B8A48", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "702": { name: "Kelly Green", hex: "#54A35A", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "703": { name: "Chartreuse", hex: "#73B85A", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "704": { name: "Bright Chartreuse", hex: "#96CC66", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "712": { name: "Cream", hex: "#F6F0DC", family: "Neutral", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "718": { name: "Plum", hex: "#982B63", family: "Purple", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "720": { name: "Dark Spice", hex: "#C45328", family: "Orange", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "721": { name: "Medium Spice", hex: "#D86B38", family: "Orange", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "722": { name: "Light Spice", hex: "#E88B54", family: "Orange", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "725": { name: "Topaz", hex: "#F0B738", family: "Yellow", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "726": { name: "Light Topaz", hex: "#F7CE52", family: "Yellow", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "727": { name: "Very Light Topaz", hex: "#FBE07A", family: "Yellow", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "729": { name: "Medium Old Gold", hex: "#C49E42", family: "Yellow", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "730": { name: "Very Dark Olive Green", hex: "#786B24", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "732": { name: "Olive Green", hex: "#8A7E2E", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "733": { name: "Medium Olive Green", hex: "#A5973C", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "734": { name: "Light Olive Green", hex: "#B4A64E", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "738": { name: "Very Light Tan", hex: "#D8AE7E", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "739": { name: "Ultra Very Light Tan", hex: "#E8CCA8", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "740": { name: "Tangerine", hex: "#EC6B1A", family: "Orange", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "741": { name: "Medium Tangerine", hex: "#F28524", family: "Orange", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "742": { name: "Light Tangerine", hex: "#F7A338", family: "Orange", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "743": { name: "Medium Yellow", hex: "#FBC342", family: "Yellow", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "744": { name: "Pale Yellow", hex: "#FCD563", family: "Yellow", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "745": { name: "Light Pale Yellow", hex: "#FDE48E", family: "Yellow", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "746": { name: "Off White", hex: "#FCF6DC", family: "Neutral", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "747": { name: "Sky Blue Very Light", hex: "#C6E6EC", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "754": { name: "Light Peach", hex: "#F3C2B1", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "758": { name: "Very Light Terra Cotta", hex: "#DDA291", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "760": { name: "Salmon", hex: "#E68B82", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "761": { name: "Light Salmon", hex: "#EFA89E", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "762": { name: "Very Light Pearl Gray", hex: "#D0D3D8", family: "Neutral", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "772": { name: "Very Light Yellow Green", hex: "#C6D8A3", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "775": { name: "Baby Blue Very Light", hex: "#C6DCE8", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "776": { name: "Medium Pink", hex: "#F0A8B4", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "777": { name: "Very Dark Raspberry", hex: "#8C2238", family: "Red", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "778": { name: "Very Light Antique Mauve", hex: "#D8B2BA", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "779": { name: "Dark Cocoa", hex: "#5E4238", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "780": { name: "Ultra Very Dark Topaz", hex: "#8F6224", family: "Yellow", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "782": { name: "Dark Topaz", hex: "#AE7A2C", family: "Yellow", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "783": { name: "Medium Topaz", hex: "#C69238", family: "Yellow", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "791": { name: "Very Dark Cornflower Blue", hex: "#384673", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "792": { name: "Dark Cornflower Blue", hex: "#4E5F94", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "793": { name: "Medium Cornflower Blue", hex: "#6B7EB4", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "794": { name: "Light Cornflower Blue", hex: "#8E9FD0", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "796": { name: "Dark Royal Blue", hex: "#284685", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "797": { name: "Royal Blue", hex: "#365CA3", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "798": { name: "Dark Delft Blue", hex: "#4E76AD", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "799": { name: "Medium Delft Blue", hex: "#6E94C4", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "800": { name: "Pale Delft Blue", hex: "#A3C0DC", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "801": { name: "Dark Coffee Brown", hex: "#613E24", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "803": { name: "Ultra Very Dark Baby Blue", hex: "#2C597C", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "806": { name: "Medium Dark Peacock Blue", hex: "#2A7A94", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "807": { name: "Turquoise", hex: "#488CA3", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "809": { name: "Delft Blue", hex: "#82A6C9", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "813": { name: "Light Blue", hex: "#82B2D4", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "814": { name: "Dark Garnet", hex: "#7A192B", family: "Red", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "815": { name: "Garnet", hex: "#941E32", family: "Red", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "816": { name: "Garnet", hex: "#A82136", family: "Red", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "817": { name: "Very Dark Coral Red", hex: "#BA2433", family: "Red", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "818": { name: "Baby Pink", hex: "#F7C2C6", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "819": { name: "Light Baby Pink", hex: "#FBE0E2", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "820": { name: "Very Dark Royal Blue", hex: "#1E3873", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "822": { name: "Light Beige Gray", hex: "#D8D0C5", family: "Neutral", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "823": { name: "Dark Navy Blue", hex: "#1A2B4C", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "824": { name: "Very Dark Blue", hex: "#2C5E8A", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "825": { name: "Dark Blue", hex: "#3673A3", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "826": { name: "Medium Blue", hex: "#4E8EC0", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "827": { name: "Very Light Blue", hex: "#8BBCE0", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "828": { name: "Ultra Very Light Blue", hex: "#B4D8EE", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "829": { name: "Very Dark Golden Olive", hex: "#6B5C28", family: "Yellow", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "830": { name: "Dark Golden Olive", hex: "#7E6D32", family: "Yellow", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "831": { name: "Medium Golden Olive", hex: "#94823E", family: "Yellow", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "832": { name: "Golden Olive", hex: "#A89448", family: "Yellow", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "833": { name: "Light Golden Olive", hex: "#BFA954", family: "Yellow", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "834": { name: "Very Light Golden Olive", hex: "#D4C06E", family: "Yellow", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "838": { name: "Very Dark Beige Brown", hex: "#4E3E30", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "839": { name: "Dark Beige Brown", hex: "#63503E", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "840": { name: "Medium Beige Brown", hex: "#7E6854", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "841": { name: "Light Beige Brown", hex: "#9C846E", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "842": { name: "Very Light Beige Brown", hex: "#BAA38E", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "844": { name: "Ultra Dark Beaver Gray", hex: "#4E4B46", family: "Neutral", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "890": { name: "Ultra Dark Pistachio Green", hex: "#203E24", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "891": { name: "Dark Carnation", hex: "#DC4863", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "892": { name: "Medium Carnation", hex: "#EC6B82", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "893": { name: "Light Carnation", hex: "#F38E9E", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "894": { name: "Very Light Carnation", hex: "#F8B4BE", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "895": { name: "Very Dark Hunter Green", hex: "#365A38", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "898": { name: "Very Dark Coffee Brown", hex: "#4E321C", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "899": { name: "Medium Rose", hex: "#E88296", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "900": { name: "Dark Burnt Orange", hex: "#CE541C", family: "Orange", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "902": { name: "Very Dark Garnet", hex: "#782232", family: "Red", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "904": { name: "Very Dark Parrot Green", hex: "#3E6E28", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "905": { name: "Dark Parrot Green", hex: "#4E8232", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "906": { name: "Medium Parrot Green", hex: "#6B9E42", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "907": { name: "Light Parrot Green", hex: "#8EC054", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "909": { name: "Very Dark Emerald Green", hex: "#206338", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "910": { name: "Dark Emerald Green", hex: "#287842", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "911": { name: "Medium Emerald Green", hex: "#328E52", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "912": { name: "Light Emerald Green", hex: "#48A366", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "913": { name: "Medium Nile Green", hex: "#6BB882", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "915": { name: "Dark Plum", hex: "#982454", family: "Purple", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "917": { name: "Medium Plum", hex: "#B8346B", family: "Purple", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "918": { name: "Dark Red Copper", hex: "#823218", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "919": { name: "Red Copper", hex: "#9E3E1C", family: "Orange", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "920": { name: "Copper", hex: "#B85428", family: "Orange", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "921": { name: "Copper", hex: "#CC6B36", family: "Orange", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "922": { name: "Light Copper", hex: "#DC854E", family: "Orange", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "924": { name: "Very Dark Gray Green", hex: "#4E6363", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "926": { name: "Medium Gray Green", hex: "#789191", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "927": { name: "Light Gray Green", hex: "#9CB4B4", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "928": { name: "Very Light Gray Green", hex: "#B8CCCC", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "930": { name: "Dark Antique Blue", hex: "#4E667E", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "931": { name: "Medium Antique Blue", hex: "#6B859E", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "932": { name: "Light Antique Blue", hex: "#94AEC6", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "934": { name: "Black Avocado Green", hex: "#323E20", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "935": { name: "Dark Avocado Green", hex: "#424E28", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "936": { name: "Very Dark Avocado Green", hex: "#546332", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "937": { name: "Medium Avocado Green", hex: "#63733E", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "938": { name: "Ultra Dark Coffee Brown", hex: "#3E2816", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "939": { name: "Very Dark Navy Blue", hex: "#142238", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "943": { name: "Medium Aquamarine", hex: "#3E8E78", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "945": { name: "Tawny", hex: "#E6B494", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "946": { name: "Burnt Orange", hex: "#DF5E1E", family: "Orange", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "947": { name: "Burnt Orange", hex: "#E87328", family: "Orange", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "948": { name: "Very Light Peach", hex: "#F7D0C2", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "950": { name: "Light Sand", hex: "#E8B8A3", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "951": { name: "Light Tawny", hex: "#F2C6AE", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "954": { name: "Nile Green", hex: "#8EC69E", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "955": { name: "Light Nile Green", hex: "#A8D8B8", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "956": { name: "Geranium", hex: "#E85263", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "957": { name: "Pale Geranium", hex: "#EC7382", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "958": { name: "Dark Aquamarine", hex: "#388573", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "959": { name: "Medium Aquamarine", hex: "#54A38E", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "961": { name: "Dark Dusty Rose", hex: "#C9546B", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "962": { name: "Medium Dusty Rose", hex: "#DC7388", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "963": { name: "Ultra Very Light Dusty Rose", hex: "#F3B8C2", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "964": { name: "Light Aquamarine", hex: "#94CFC0", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "966": { name: "Baby Green", hex: "#B4D4B8", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "967": { name: "Light Apricot", hex: "#F2B8A3", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "970": { name: "Light Pumpkin", hex: "#F78B2C", family: "Orange", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "971": { name: "Pumpkin", hex: "#F67818", family: "Orange", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "972": { name: "Deep Canary", hex: "#F2A624", family: "Yellow", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "973": { name: "Bright Canary", hex: "#F7C21E", family: "Yellow", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "975": { name: "Dark Golden Brown", hex: "#8E5A22", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "976": { name: "Medium Golden Brown", hex: "#B47832", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "977": { name: "Light Golden Brown", hex: "#C98E42", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "986": { name: "Very Dark Forest Green", hex: "#3E6332", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "987": { name: "Dark Forest Green", hex: "#4E783E", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "988": { name: "Medium Forest Green", hex: "#6B9454", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "989": { name: "Forest Green", hex: "#82A86B", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "991": { name: "Dark Aquamarine", hex: "#326E5E", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "992": { name: "Medium Aquamarine", hex: "#488878", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "993": { name: "Light Aquamarine", hex: "#6BA394", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "995": { name: "Dark Electric Blue", hex: "#287898", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "996": { name: "Medium Electric Blue", hex: "#489EC0", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3011": { name: "Dark Khaki Green", hex: "#898A58", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3012": { name: "Medium Khaki Green", hex: "#A3A972", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3013": { name: "Light Khaki Green", hex: "#BFC292", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3021": { name: "Very Dark Brown Gray", hex: "#544E46", family: "Neutral", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3022": { name: "Medium Brown Gray", hex: "#8E887E", family: "Neutral", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3023": { name: "Light Brown Gray", hex: "#B4AEA3", family: "Neutral", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3024": { name: "Very Light Brown Gray", hex: "#CFCAC0", family: "Neutral", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3031": { name: "Very Dark Mocha Brown", hex: "#4E3E30", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3032": { name: "Medium Mocha Brown", hex: "#8E7863", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3033": { name: "Very Light Mocha Brown", hex: "#C6B4A3", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3041": { name: "Medium Antique Violet", hex: "#8E6B7E", family: "Purple", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3042": { name: "Light Antique Violet", hex: "#B494A3", family: "Purple", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3045": { name: "Dark Yellow Beige", hex: "#B4945E", family: "Yellow", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3046": { name: "Medium Yellow Beige", hex: "#C9AE78", family: "Yellow", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3047": { name: "Light Yellow Beige", hex: "#DEC694", family: "Yellow", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3051": { name: "Dark Green Gray", hex: "#5E664E", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3052": { name: "Medium Green Gray", hex: "#828C70", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3053": { name: "Light Green Gray", hex: "#A3AC90", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3064": { name: "Desert Sand", hex: "#B8856B", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3072": { name: "Very Light Beaver Gray", hex: "#D0CCC5", family: "Neutral", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3078": { name: "Very Light Golden Yellow", hex: "#FCF4B4", family: "Yellow", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3325": { name: "Light Baby Blue", hex: "#94BCD8", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3326": { name: "Light Rose", hex: "#E68294", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3328": { name: "Dark Salmon", hex: "#C9545E", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3340": { name: "Medium Apricot", hex: "#DC634E", family: "Orange", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3341": { name: "Apricot", hex: "#EC826B", family: "Orange", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3345": { name: "Dark Hunter Green", hex: "#3E6E42", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3346": { name: "Hunter Green", hex: "#4E8552", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3347": { name: "Medium Yellow Green", hex: "#639E63", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3348": { name: "Light Yellow Green", hex: "#8EC07E", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3350": { name: "Ultra Dark Dusty Rose", hex: "#B83E54", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3354": { name: "Light Dusty Rose", hex: "#DC8E9E", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3362": { name: "Dark Pine Green", hex: "#4E6342", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3363": { name: "Medium Pine Green", hex: "#6B825E", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3364": { name: "Pine Green", hex: "#859E78", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3371": { name: "Black Brown", hex: "#281E16", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3607": { name: "Light Plum", hex: "#C4548E", family: "Purple", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3608": { name: "Very Light Plum", hex: "#DC82B4", family: "Purple", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3609": { name: "Ultra Light Plum", hex: "#E8A8C9", family: "Purple", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3685": { name: "Very Dark Mauve", hex: "#822842", family: "Purple", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3687": { name: "Mauve", hex: "#A83E5E", family: "Purple", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3688": { name: "Medium Mauve", hex: "#C96B85", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3689": { name: "Light Mauve", hex: "#E094A8", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3705": { name: "Dark Melon", hex: "#DC485E", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3706": { name: "Medium Melon", hex: "#E86378", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3708": { name: "Light Melon", hex: "#F38E9E", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3712": { name: "Medium Salmon", hex: "#D8635E", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3713": { name: "Very Light Salmon", hex: "#F2C2BA", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3716": { name: "Very Light Dusty Rose", hex: "#E8A3B4", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3721": { name: "Dark Shell Pink", hex: "#A84E54", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3722": { name: "Medium Shell Pink", hex: "#BC5E63", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3726": { name: "Dark Antique Mauve", hex: "#945466", family: "Purple", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3727": { name: "Light Antique Mauve", hex: "#C98E9E", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3731": { name: "Very Dark Dusty Rose", hex: "#C94863", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3733": { name: "Dusty Rose", hex: "#DC7388", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3740": { name: "Dark Antique Violet", hex: "#78546B", family: "Purple", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3743": { name: "Very Light Antique Violet", hex: "#CCB4C2", family: "Purple", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3746": { name: "Dark Blue Violet", hex: "#6B6394", family: "Purple", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3747": { name: "Very Light Blue Violet", hex: "#B4BCE0", family: "Purple", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3750": { name: "Very Dark Antique Blue", hex: "#38546B", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3752": { name: "Very Light Antique Blue", hex: "#B4C6D8", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3753": { name: "Ultra Very Light Antique Blue", hex: "#CFDCE8", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3755": { name: "Baby Blue", hex: "#78A8CC", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3756": { name: "Ultra Very Light Baby Blue", hex: "#DCEAF2", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3760": { name: "Medium Wedgwood", hex: "#4882A3", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3761": { name: "Light Sky Blue", hex: "#A3CED8", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3765": { name: "Very Dark Peacock Blue", hex: "#38738E", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3766": { name: "Light Peacock Blue", hex: "#549AB4", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3768": { name: "Dark Gray Green", hex: "#637E7E", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3770": { name: "Very Light Tawny", hex: "#F7DFC6", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3771": { name: "Ultra Very Light Terra Cotta", hex: "#E8B8A8", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3772": { name: "Very Dark Desert Sand", hex: "#8E543E", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3773": { name: "Medium Desert Sand", hex: "#B8826B", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3774": { name: "Very Light Desert Sand", hex: "#E0B49E", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3776": { name: "Light Mahogany", hex: "#C96B3E", family: "Orange", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3777": { name: "Very Dark Terra Cotta", hex: "#82281E", family: "Red", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3778": { name: "Light Terra Cotta", hex: "#C96E54", family: "Orange", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3779": { name: "Ultra Very Light Terra Cotta", hex: "#E8B4A3", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3781": { name: "Dark Mocha Brown", hex: "#6B543E", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3782": { name: "Light Mocha Brown", hex: "#A8947E", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3787": { name: "Dark Brown Gray", hex: "#6E685E", family: "Neutral", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3790": { name: "Ultra Dark Beige Gray", hex: "#6E665E", family: "Neutral", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3799": { name: "Very Dark Pewter Gray", hex: "#3E3E42", family: "Neutral", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3801": { name: "Very Dark Melon", hex: "#C9384E", family: "Red", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3802": { name: "Very Dark Antique Mauve", hex: "#784254", family: "Purple", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3803": { name: "Dark Mauve", hex: "#943854", family: "Purple", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3804": { name: "Dark Cyclamen Pink", hex: "#C9386B", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3805": { name: "Cyclamen Pink", hex: "#DC4E7E", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3806": { name: "Light Cyclamen Pink", hex: "#EC739E", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3807": { name: "Cornflower Blue", hex: "#546394", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3808": { name: "Ultra Very Dark Turquoise", hex: "#387382", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3809": { name: "Very Dark Turquoise", hex: "#428898", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3810": { name: "Dark Turquoise", hex: "#549CA8", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3811": { name: "Very Light Turquoise", hex: "#94CCD4", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3812": { name: "Very Dark Seagreen", hex: "#488878", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3813": { name: "Light Blue Green", hex: "#94C0AE", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3814": { name: "Aquamarine", hex: "#639E8E", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3815": { name: "Dark Celadon Green", hex: "#54785E", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3816": { name: "Medium Celadon Green", hex: "#789E82", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3817": { name: "Light Celadon Green", hex: "#9EC0A8", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3818": { name: "Ultra Very Dark Emerald Green", hex: "#325E3E", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3819": { name: "Light Moss Green", hex: "#A8C454", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3820": { name: "Dark Straw", hex: "#C9A34E", family: "Yellow", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3821": { name: "Straw", hex: "#D8B45E", family: "Yellow", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3822": { name: "Light Straw", hex: "#E4C678", family: "Yellow", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3823": { name: "Ultra Pale Yellow", hex: "#FCF4A8", family: "Yellow", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3824": { name: "Light Apricot", hex: "#EC9E94", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3825": { name: "Pale Pumpkin", hex: "#EC9478", family: "Orange", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3826": { name: "Golden Brown", hex: "#9E6328", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3827": { name: "Pale Golden Brown", hex: "#C48238", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3828": { name: "Hazelnut Brown", hex: "#A87338", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3829": { name: "Very Dark Old Gold", hex: "#826824", family: "Yellow", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3830": { name: "Medium Terra Cotta", hex: "#B44838", family: "Red", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3831": { name: "Dark Raspberry", hex: "#9E2838", family: "Red", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3832": { name: "Medium Raspberry", hex: "#C44854", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3833": { name: "Light Raspberry", hex: "#DC6E78", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3834": { name: "Dark Grape", hex: "#6E385E", family: "Purple", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3835": { name: "Medium Grape", hex: "#94547E", family: "Purple", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3836": { name: "Light Grape", hex: "#B4789E", family: "Purple", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3837": { name: "Ultra Dark Lavender", hex: "#633E78", family: "Purple", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3838": { name: "Dark Lavender Blue", hex: "#546894", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3839": { name: "Medium Lavender Blue", hex: "#6B7EA8", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3840": { name: "Light Lavender Blue", hex: "#94A6C9", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3841": { name: "Pale Lavender Blue", hex: "#B8C6DC", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3842": { name: "Dark Wedgwood", hex: "#38637E", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3843": { name: "Electric Blue", hex: "#288EC0", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3844": { name: "Bright Turquoise", hex: "#289EC0", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3845": { name: "Medium Turquoise", hex: "#38A8C0", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3846": { name: "Light Turquoise", hex: "#54B8CC", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3847": { name: "Dark Teal Green", hex: "#326E6E", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3848": { name: "Medium Teal Green", hex: "#428282", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3849": { name: "Light Teal Green", hex: "#549898", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3850": { name: "Dark Bright Green", hex: "#387863", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3851": { name: "Light Bright Green", hex: "#549E82", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3852": { name: "Very Dark Straw", hex: "#C4942C", family: "Yellow", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3853": { name: "Dark Autumn Gold", hex: "#C97828", family: "Orange", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3854": { name: "Medium Autumn Gold", hex: "#DC8E38", family: "Orange", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3855": { name: "Light Autumn Gold", hex: "#ECA854", family: "Orange", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3856": { name: "Ultra Very Light Mahogany", hex: "#E8A882", family: "Orange", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3857": { name: "Dark Rosewood", hex: "#9E3E32", family: "Red", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3858": { name: "Medium Rosewood", hex: "#B85448", family: "Red", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3859": { name: "Light Rosewood", hex: "#C9786E", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3860": { name: "Heather Violet", hex: "#825E78", family: "Purple", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3861": { name: "Light Heather Violet", hex: "#A38298", family: "Purple", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3862": { name: "Dark Mocha Beige", hex: "#78634E", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3863": { name: "Medium Mocha Beige", hex: "#9E8873", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3864": { name: "Light Mocha Beige", hex: "#C4B09E", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3865": { name: "Winter White", hex: "#F9F6EE", family: "Neutral", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3866": { name: "Ultra Very Light Mocha Brown", hex: "#D8C8B8", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3880": { name: "Very Dark Bright Green", hex: "#28663C", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3881": { name: "Very Light Coral", hex: "#F7A69C", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3882": { name: "Medium Dark Terra Cotta", hex: "#B24E3E", family: "Red", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3883": { name: "Medium Dark Violet", hex: "#7E488A", family: "Purple", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3884": { name: "Light Jade", hex: "#78B89C", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3885": { name: "Dark Cranberry", hex: "#B83262", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3886": { name: "Light Cranberry", hex: "#EB7A9E", family: "Pink", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3887": { name: "Medium Dark Blue", hex: "#326696", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3888": { name: "Very Light Beige Brown", hex: "#E2C8B2", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3889": { name: "Light Beige Brown", hex: "#C4A68E", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3890": { name: "Light Bright Turquoise", hex: "#76C8DC", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3891": { name: "Dark Electric Blue", hex: "#246A8E", family: "Blue", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3892": { name: "Medium Light Orange Spice", hex: "#E07A42", family: "Orange", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3893": { name: "Very Light Mocha Beige", hex: "#D8C6B6", family: "Brown", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3894": { name: "Very Light Parrot Green", hex: "#B8DC82", family: "Green", line: "Moulin\u00e9 Sp\u00e9cial" },
+        "3895": { name: "Medium Dark Beaver Gray", hex: "#6E6A64", family: "Neutral", line: "Moulin\u00e9 Sp\u00e9cial" }
       },
       ANCHOR: {
-        '1': { name: 'White', hex: '#FCFCFC' },
-        '2': { name: 'Optic White', hex: '#FFFFFF' },
-        '6': { name: 'Ecru', hex: '#F0EAD6' },
-        '9': { name: 'Coral', hex: '#E04843' },
-        '10': { name: 'Light Coral', hex: '#F38B7E' },
-        '11': { name: 'Medium Coral', hex: '#E65E52' },
-        '13': { name: 'Dark Red', hex: '#B71F33' },
-        '19': { name: 'Bright Red', hex: '#D92434' },
-        '20': { name: 'Garnet', hex: '#941E32' },
-        '36': { name: 'Light Rose', hex: '#EC6A87' },
-        '38': { name: 'Dark Rose', hex: '#BA3A67' },
-        '42': { name: 'Pink', hex: '#F38E9E' },
-        '46': { name: 'Dark Pink', hex: '#DC4863' },
-        '76': { name: 'Lavender', hex: '#B6C1DF' },
-        '87': { name: 'Violet', hex: '#8A4E8A' },
-        '118': { name: 'Baby Blue', hex: '#94BCD8' },
-        '120': { name: 'Medium Blue', hex: '#4E8EC0' },
-        '128': { name: 'Sky Blue', hex: '#A3CED8' },
-        '131': { name: 'Royal Blue', hex: '#365CA3' },
-        '149': { name: 'Navy Blue', hex: '#17365D' },
-        '158': { name: 'Turquoise', hex: '#488CA3' },
-        '167': { name: 'Aquamarine', hex: '#639E8E' },
-        '187': { name: 'Emerald Green', hex: '#287842' },
-        '208': { name: 'Moss Green', hex: '#829138' },
-        '226': { name: 'Pistachio Green', hex: '#698D69' },
-        '228': { name: 'Dark Green', hex: '#204B2B' },
-        '246': { name: 'Forest Green', hex: '#4E783E' },
-        '266': { name: 'Olive Green', hex: '#8A7E2E' },
-        '289': { name: 'Lemon', hex: '#FDE94A' },
-        '298': { name: 'Topaz', hex: '#F0B738' },
-        '301': { name: 'Old Gold', hex: '#C49E42' },
-        '306': { name: 'Tangerine', hex: '#F28524' },
-        '309': { name: 'Burnt Orange', hex: '#DF5E1E' },
-        '347': { name: 'Tan', hex: '#C78E54' },
-        '351': { name: 'Light Brown', hex: '#985E32' },
-        '355': { name: 'Medium Brown', hex: '#7A4924' },
-        '357': { name: 'Dark Brown', hex: '#613E24' },
-        '359': { name: 'Mahogany', hex: '#8F461E' },
-        '382': { name: 'Coffee Brown', hex: '#4E321C' },
-        '387': { name: 'Beige Gray', hex: '#C6BEB2' },
-        '392': { name: 'Pearl Gray', hex: '#B4B7BC' },
-        '398': { name: 'Pewter Gray', hex: '#6C6D70' },
-        '400': { name: 'Dark Gray', hex: '#515255' },
-        '403': { name: 'Black', hex: '#141416' }
+        '1': { name: 'White', hex: '#FCFCFC', family: 'Neutral', line: 'Stranded Cotton' },
+        '2': { name: 'Optic White', hex: '#FFFFFF', family: 'Neutral', line: 'Stranded Cotton' },
+        '6': { name: 'Ecru', hex: '#F0EAD6', family: 'Neutral', line: 'Stranded Cotton' },
+        '9': { name: 'Coral', hex: '#E04843', family: 'Pink', line: 'Stranded Cotton' },
+        '10': { name: 'Light Coral', hex: '#F38B7E', family: 'Pink', line: 'Stranded Cotton' },
+        '11': { name: 'Medium Coral', hex: '#E65E52', family: 'Orange', line: 'Stranded Cotton' },
+        '13': { name: 'Dark Red', hex: '#B71F33', family: 'Red', line: 'Stranded Cotton' },
+        '19': { name: 'Bright Red', hex: '#D92434', family: 'Red', line: 'Stranded Cotton' },
+        '20': { name: 'Garnet', hex: '#941E32', family: 'Red', line: 'Stranded Cotton' },
+        '36': { name: 'Light Rose', hex: '#EC6A87', family: 'Pink', line: 'Stranded Cotton' },
+        '38': { name: 'Dark Rose', hex: '#BA3A67', family: 'Pink', line: 'Stranded Cotton' },
+        '42': { name: 'Pink', hex: '#F38E9E', family: 'Pink', line: 'Stranded Cotton' },
+        '46': { name: 'Dark Pink', hex: '#DC4863', family: 'Pink', line: 'Stranded Cotton' },
+        '76': { name: 'Lavender', hex: '#B6C1DF', family: 'Purple', line: 'Stranded Cotton' },
+        '87': { name: 'Violet', hex: '#8A4E8A', family: 'Purple', line: 'Stranded Cotton' },
+        '118': { name: 'Baby Blue', hex: '#94BCD8', family: 'Blue', line: 'Stranded Cotton' },
+        '120': { name: 'Medium Blue', hex: '#4E8EC0', family: 'Blue', line: 'Stranded Cotton' },
+        '128': { name: 'Sky Blue', hex: '#A3CED8', family: 'Blue', line: 'Stranded Cotton' },
+        '131': { name: 'Royal Blue', hex: '#365CA3', family: 'Blue', line: 'Stranded Cotton' },
+        '149': { name: 'Navy Blue', hex: '#17365D', family: 'Blue', line: 'Stranded Cotton' },
+        '158': { name: 'Turquoise', hex: '#488CA3', family: 'Blue', line: 'Stranded Cotton' },
+        '167': { name: 'Aquamarine', hex: '#639E8E', family: 'Green', line: 'Stranded Cotton' },
+        '187': { name: 'Emerald Green', hex: '#287842', family: 'Green', line: 'Stranded Cotton' },
+        '208': { name: 'Moss Green', hex: '#829138', family: 'Green', line: 'Stranded Cotton' },
+        '226': { name: 'Pistachio Green', hex: '#698D69', family: 'Green', line: 'Stranded Cotton' },
+        '228': { name: 'Dark Green', hex: '#204B2B', family: 'Green', line: 'Stranded Cotton' },
+        '246': { name: 'Forest Green', hex: '#4E783E', family: 'Green', line: 'Stranded Cotton' },
+        '266': { name: 'Olive Green', hex: '#8A7E2E', family: 'Green', line: 'Stranded Cotton' },
+        '289': { name: 'Lemon', hex: '#FDE94A', family: 'Yellow', line: 'Stranded Cotton' },
+        '298': { name: 'Topaz', hex: '#F0B738', family: 'Yellow', line: 'Stranded Cotton' },
+        '301': { name: 'Old Gold', hex: '#C49E42', family: 'Yellow', line: 'Stranded Cotton' },
+        '306': { name: 'Tangerine', hex: '#F28524', family: 'Orange', line: 'Stranded Cotton' },
+        '309': { name: 'Burnt Orange', hex: '#DF5E1E', family: 'Orange', line: 'Stranded Cotton' },
+        '347': { name: 'Tan', hex: '#C78E54', family: 'Brown', line: 'Stranded Cotton' },
+        '351': { name: 'Light Brown', hex: '#985E32', family: 'Brown', line: 'Stranded Cotton' },
+        '355': { name: 'Medium Brown', hex: '#7A4924', family: 'Brown', line: 'Stranded Cotton' },
+        '357': { name: 'Dark Brown', hex: '#613E24', family: 'Brown', line: 'Stranded Cotton' },
+        '359': { name: 'Mahogany', hex: '#8F461E', family: 'Brown', line: 'Stranded Cotton' },
+        '382': { name: 'Coffee Brown', hex: '#4E321C', family: 'Brown', line: 'Stranded Cotton' },
+        '387': { name: 'Beige Gray', hex: '#C6BEB2', family: 'Neutral', line: 'Stranded Cotton' },
+        '392': { name: 'Pearl Gray', hex: '#B4B7BC', family: 'Neutral', line: 'Stranded Cotton' },
+        '398': { name: 'Pewter Gray', hex: '#6C6D70', family: 'Neutral', line: 'Stranded Cotton' },
+        '400': { name: 'Dark Gray', hex: '#515255', family: 'Neutral', line: 'Stranded Cotton' },
+        '403': { name: 'Black', hex: '#141416', family: 'Neutral', line: 'Stranded Cotton' }
       },
       SULKY: {
-        '1001': { name: 'Bright White', hex: '#FFFFFF' },
-        '1002': { name: 'Off White', hex: '#F6F0DC' },
-        '1005': { name: 'Jet Black', hex: '#141416' },
-        '1062': { name: 'Christmas Red', hex: '#C72438' },
-        '1124': { name: 'Sunflower Yellow', hex: '#F7C21E' },
-        '1184': { name: 'Royal Blue', hex: '#284685' },
-        '1174': { name: 'Kelly Green', hex: '#3B8A48' },
-        '1223': { name: 'Coral Sunset', hex: '#E85D4A' }
+        '1001': { name: 'Bright White', hex: '#FFFFFF', family: 'Neutral', line: 'Cotton' },
+        '1002': { name: 'Off White', hex: '#F6F0DC', family: 'Neutral', line: 'Cotton' },
+        '1005': { name: 'Jet Black', hex: '#141416', family: 'Neutral', line: 'Cotton' },
+        '1062': { name: 'Christmas Red', hex: '#C72438', family: 'Red', line: 'Cotton' },
+        '1124': { name: 'Sunflower Yellow', hex: '#F7C21E', family: 'Yellow', line: 'Cotton' },
+        '1184': { name: 'Royal Blue', hex: '#284685', family: 'Blue', line: 'Cotton' },
+        '1174': { name: 'Kelly Green', hex: '#3B8A48', family: 'Green', line: 'Cotton' },
+        '1223': { name: 'Coral Sunset', hex: '#E85D4A', family: 'Orange', line: 'Cotton' }
       },
       COSMO: {
-        '100': { name: 'White', hex: '#FFFFFF' },
-        '110': { name: 'Cream', hex: '#F6F0DC' },
-        '600': { name: 'Black', hex: '#141416' },
-        '2112': { name: 'Red', hex: '#C72438' },
-        '2514': { name: 'Blue', hex: '#2C5E8A' },
-        '2410': { name: 'Green', hex: '#3E8552' }
+        '100': { name: 'White', hex: '#FFFFFF', family: 'Neutral', line: '25 Embroidery Floss' },
+        '110': { name: 'Cream', hex: '#F6F0DC', family: 'Neutral', line: '25 Embroidery Floss' },
+        '600': { name: 'Black', hex: '#141416', family: 'Neutral', line: '25 Embroidery Floss' },
+        '2112': { name: 'Red', hex: '#C72438', family: 'Red', line: '25 Embroidery Floss' },
+        '2514': { name: 'Blue', hex: '#2C5E8A', family: 'Blue', line: '25 Embroidery Floss' },
+        '2410': { name: 'Green', hex: '#3E8552', family: 'Green', line: '25 Embroidery Floss' }
       }
     };
 
@@ -1901,8 +2735,8 @@
     function lookupThreadCatalog(brand, number) {
       const brandKey = normalizeBrandKey(brand);
       if (!brandKey || !number) return null;
-      const numKey = number.trim().toUpperCase();
-      const entry = THREAD_CATALOG[brandKey] && THREAD_CATALOG[brandKey][numKey];
+      const numKey = normalizeThreadCode(brandKey, number);
+      const entry = (THREAD_CATALOG[brandKey] && (THREAD_CATALOG[brandKey][numKey] || THREAD_CATALOG[brandKey][number.trim().toUpperCase()])) || null;
       return entry ? { brandKey, number: numKey, ...entry } : null;
     }
 
@@ -1952,6 +2786,8 @@
         if (thread.swatchHex && /^#[0-9a-fA-F]{6}$/.test(thread.swatchHex)) {
           return thread.swatchHex;
         }
+        const ref = getMappedReference(thread);
+        if (ref && ref.hex) return ref.hex;
         const match = lookupThreadCatalog(thread.brand, thread.number);
         if (match && match.hex) return match.hex;
       }
@@ -1959,7 +2795,7 @@
     }
 
     function guessCssColor(name) {
-      if (!name) return 'var(--bg)';
+      if (!name) return 'var(--card-elevated)';
       const n = name.toLowerCase();
       const hexMatch = n.match(/#[0-9a-f]{6}\b/);
       if (hexMatch) return hexMatch[0];
@@ -1986,7 +2822,7 @@
       for (const [key, hex] of Object.entries(map)) {
         if (n.includes(key)) return hex;
       }
-      return 'var(--bg)';
+      return 'var(--card-elevated)';
     }
 
     function escapeHtml(str) {
@@ -1999,7 +2835,7 @@
 
     // Init
     initTheme();
-    syncPillNavAnchor();
+    scheduleViewportSettle();
     loadPiConfig();
     updateHeaderCount();
     renderStash();
